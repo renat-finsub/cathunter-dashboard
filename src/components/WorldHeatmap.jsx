@@ -17,10 +17,11 @@ const METRICS = [
 ];
 
 // ISO-3166-1 numeric to Alpha-3 mapping for our countries
+// world-atlas TopoJSON uses numeric IDs without leading zeros
 const NUMERIC_TO_ALPHA3 = {
-  '840': 'USA', '076': 'BRA', '826': 'GBR', '276': 'DEU', '250': 'FRA',
-  '356': 'IND', '156': 'CHN', '392': 'JPN', '410': 'KOR', '036': 'AUS',
-  '124': 'CAN', '484': 'MEX', '032': 'ARG', '152': 'CHL', '643': 'RUS',
+  '840': 'USA', '76': 'BRA', '826': 'GBR', '276': 'DEU', '250': 'FRA',
+  '356': 'IND', '156': 'CHN', '392': 'JPN', '410': 'KOR', '36': 'AUS',
+  '124': 'CAN', '484': 'MEX', '32': 'ARG', '152': 'CHL', '643': 'RUS',
   '792': 'TUR', '360': 'IDN', '764': 'THA', '724': 'ESP', '380': 'ITA',
   '566': 'NGA', '710': 'ZAF', '818': 'EGY', '170': 'COL', '608': 'PHL',
 };
@@ -82,14 +83,14 @@ export default function WorldHeatmap() {
           <Geographies geography={GEO_URL}>
             {({ geographies }) =>
               geographies.map((geo) => {
-                const numericCode = geo.id;
+                const numericCode = String(geo.id);
                 const alpha3 = NUMERIC_TO_ALPHA3[numericCode];
                 const countryInfo = alpha3 ? dataMap[alpha3] : null;
                 const value = countryInfo ? countryInfo[metric] : 0;
 
                 return (
                   <Geography
-                    key={geo.rsmKey}
+                    key={`${geo.rsmKey}-${metric}`}
                     geography={geo}
                     fill={getColor(value)}
                     stroke="#cbd5e1"

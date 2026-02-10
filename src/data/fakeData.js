@@ -213,16 +213,18 @@ export function filterData(data, { period, country, platform }) {
   const days = periodDays[period] || 30;
   filtered = filtered.slice(-days);
 
-  // Platform filter: adjust user counts
+  // Platform filter: zero out the opposite platform
   if (platform === 'iOS') {
     filtered = filtered.map((d) => ({
       ...d,
       newUsers: d.newUsersIos,
+      newUsersAndroid: 0,
     }));
   } else if (platform === 'Android') {
     filtered = filtered.map((d) => ({
       ...d,
       newUsers: d.newUsersAndroid,
+      newUsersIos: 0,
     }));
   }
 
@@ -241,9 +243,9 @@ export function getPreviousPeriodData(data, { period, country, platform }) {
   let prev = source.slice(start, end);
 
   if (platform === 'iOS') {
-    prev = prev.map((d) => ({ ...d, newUsers: d.newUsersIos }));
+    prev = prev.map((d) => ({ ...d, newUsers: d.newUsersIos, newUsersAndroid: 0 }));
   } else if (platform === 'Android') {
-    prev = prev.map((d) => ({ ...d, newUsers: d.newUsersAndroid }));
+    prev = prev.map((d) => ({ ...d, newUsers: d.newUsersAndroid, newUsersIos: 0 }));
   }
 
   return prev;
