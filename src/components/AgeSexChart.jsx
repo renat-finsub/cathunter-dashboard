@@ -3,6 +3,19 @@ import {
   ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
+// Round up to the nearest "nice" number (10, 20, 50, 100, 200, 500, 1000...)
+function niceRound(val) {
+  if (val <= 0) return 10;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(val)));
+  const residual = val / magnitude;
+  let nice;
+  if (residual <= 1) nice = 1;
+  else if (residual <= 2) nice = 2;
+  else if (residual <= 5) nice = 5;
+  else nice = 10;
+  return nice * magnitude;
+}
+
 export default function AgeSexChart({ data }) {
   const chartData = data.map((d) => ({
     ageGroup: d.ageGroup,
@@ -10,9 +23,12 @@ export default function AgeSexChart({ data }) {
     Female: d.female,
   }));
 
-  const maxVal = Math.max(
+  const rawMax = Math.max(
     ...data.map((d) => Math.max(d.male, d.female))
   );
+
+  // Round up to a nice number for axis domain
+  const niceMax = niceRound(rawMax * 1.1);
 
   return (
     <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
@@ -31,8 +47,9 @@ export default function AgeSexChart({ data }) {
           <XAxis
             type="number"
             tick={{ fontSize: 10 }}
-            domain={[-maxVal * 1.1, maxVal * 1.1]}
-            tickFormatter={(v) => Math.abs(v)}
+            domain={[-niceMax, niceMax]}
+            tickFormatter={(v) => Math.abs(Math.round(v))}
+            allowDecimals={false}
           />
           <YAxis
             type="category"
