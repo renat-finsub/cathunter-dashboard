@@ -11,34 +11,48 @@ const rand = seededRandom(42);
 const randInt = (min, max) => Math.floor(rand() * (max - min + 1)) + min;
 const randFloat = (min, max) => rand() * (max - min) + min;
 
-// --- Countries ---
+// Box-Muller transform for normal distribution
+function randNormal(mean, stddev) {
+  const u1 = rand();
+  const u2 = rand();
+  const z = Math.sqrt(-2 * Math.log(u1 + 0.0001)) * Math.cos(2 * Math.PI * u2);
+  return mean + z * stddev;
+}
+
+function clamp(val, min, max) {
+  return Math.max(min, Math.min(max, val));
+}
+
+// --- Countries with unique behavioral profiles ---
 export const COUNTRIES = [
-  { code: 'USA', name: 'United States' },
-  { code: 'BRA', name: 'Brazil' },
-  { code: 'GBR', name: 'United Kingdom' },
-  { code: 'DEU', name: 'Germany' },
-  { code: 'FRA', name: 'France' },
-  { code: 'IND', name: 'India' },
-  { code: 'CHN', name: 'China' },
-  { code: 'JPN', name: 'Japan' },
-  { code: 'KOR', name: 'South Korea' },
-  { code: 'AUS', name: 'Australia' },
-  { code: 'CAN', name: 'Canada' },
-  { code: 'MEX', name: 'Mexico' },
-  { code: 'ARG', name: 'Argentina' },
-  { code: 'CHL', name: 'Chile' },
-  { code: 'RUS', name: 'Russia' },
-  { code: 'TUR', name: 'Turkey' },
-  { code: 'IDN', name: 'Indonesia' },
-  { code: 'THA', name: 'Thailand' },
-  { code: 'ESP', name: 'Spain' },
-  { code: 'ITA', name: 'Italy' },
-  { code: 'NGA', name: 'Nigeria' },
-  { code: 'ZAF', name: 'South Africa' },
-  { code: 'EGY', name: 'Egypt' },
-  { code: 'COL', name: 'Colombia' },
-  { code: 'PHL', name: 'Philippines' },
+  { code: 'USA', name: 'United States',  userWeight: 100, catsPerUser: 2.5, shotsPerCat: 5.0, iosShare: 0.58 },
+  { code: 'BRA', name: 'Brazil',         userWeight: 45,  catsPerUser: 3.2, shotsPerCat: 7.0, iosShare: 0.20 },
+  { code: 'GBR', name: 'United Kingdom', userWeight: 30,  catsPerUser: 1.8, shotsPerCat: 4.0, iosShare: 0.52 },
+  { code: 'DEU', name: 'Germany',        userWeight: 25,  catsPerUser: 1.5, shotsPerCat: 3.5, iosShare: 0.35 },
+  { code: 'FRA', name: 'France',         userWeight: 22,  catsPerUser: 2.0, shotsPerCat: 4.5, iosShare: 0.40 },
+  { code: 'IND', name: 'India',          userWeight: 80,  catsPerUser: 4.0, shotsPerCat: 8.0, iosShare: 0.08 },
+  { code: 'CHN', name: 'China',          userWeight: 60,  catsPerUser: 1.2, shotsPerCat: 3.0, iosShare: 0.25 },
+  { code: 'JPN', name: 'Japan',          userWeight: 35,  catsPerUser: 3.8, shotsPerCat: 9.0, iosShare: 0.70 },
+  { code: 'KOR', name: 'South Korea',    userWeight: 18,  catsPerUser: 2.8, shotsPerCat: 6.5, iosShare: 0.30 },
+  { code: 'AUS', name: 'Australia',      userWeight: 12,  catsPerUser: 2.2, shotsPerCat: 5.5, iosShare: 0.55 },
+  { code: 'CAN', name: 'Canada',         userWeight: 15,  catsPerUser: 2.0, shotsPerCat: 4.0, iosShare: 0.56 },
+  { code: 'MEX', name: 'Mexico',         userWeight: 20,  catsPerUser: 3.5, shotsPerCat: 7.5, iosShare: 0.18 },
+  { code: 'ARG', name: 'Argentina',      userWeight: 8,   catsPerUser: 2.8, shotsPerCat: 6.0, iosShare: 0.15 },
+  { code: 'CHL', name: 'Chile',          userWeight: 4,   catsPerUser: 2.0, shotsPerCat: 4.5, iosShare: 0.22 },
+  { code: 'RUS', name: 'Russia',         userWeight: 28,  catsPerUser: 3.0, shotsPerCat: 6.0, iosShare: 0.30 },
+  { code: 'TUR', name: 'Turkey',         userWeight: 16,  catsPerUser: 4.5, shotsPerCat: 9.5, iosShare: 0.22 },
+  { code: 'IDN', name: 'Indonesia',      userWeight: 40,  catsPerUser: 3.8, shotsPerCat: 8.5, iosShare: 0.10 },
+  { code: 'THA', name: 'Thailand',       userWeight: 14,  catsPerUser: 3.5, shotsPerCat: 7.0, iosShare: 0.25 },
+  { code: 'ESP', name: 'Spain',          userWeight: 15,  catsPerUser: 1.8, shotsPerCat: 4.0, iosShare: 0.38 },
+  { code: 'ITA', name: 'Italy',          userWeight: 17,  catsPerUser: 1.6, shotsPerCat: 3.8, iosShare: 0.32 },
+  { code: 'NGA', name: 'Nigeria',        userWeight: 10,  catsPerUser: 4.2, shotsPerCat: 9.0, iosShare: 0.06 },
+  { code: 'ZAF', name: 'South Africa',   userWeight: 6,   catsPerUser: 2.5, shotsPerCat: 5.5, iosShare: 0.20 },
+  { code: 'EGY', name: 'Egypt',          userWeight: 9,   catsPerUser: 3.8, shotsPerCat: 8.0, iosShare: 0.12 },
+  { code: 'COL', name: 'Colombia',       userWeight: 7,   catsPerUser: 2.6, shotsPerCat: 5.0, iosShare: 0.16 },
+  { code: 'PHL', name: 'Philippines',    userWeight: 13,  catsPerUser: 3.0, shotsPerCat: 7.0, iosShare: 0.12 },
 ];
+
+const totalUserWeight = COUNTRIES.reduce((s, c) => s + c.userWeight, 0);
 
 // --- Generate daily data for 365 days ---
 const TOTAL_DAYS = 365;
@@ -50,25 +64,45 @@ function generateDailyData() {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
     const dateStr = date.toISOString().slice(0, 10);
+    const month = date.getMonth(); // 0-11
+    const dow = date.getDay(); // 0=Sun
 
-    // Base growth curve
+    // Growth curve with seasonal variation and noise
     const progress = (TOTAL_DAYS - i) / TOTAL_DAYS;
-    const baseUsers = Math.floor(50 + progress * 200 + rand() * 40);
-    const baseCats = Math.floor(30 + progress * 150 + rand() * 30);
-    const baseShots = Math.floor(100 + progress * 500 + rand() * 80);
+    const seasonalFactor = 1.0
+      + 0.25 * Math.sin((month - 3) * Math.PI / 6)   // summer peak
+      + 0.10 * Math.sin((month - 11) * Math.PI / 3);  // holiday bump
+    const weekendFactor = (dow === 0 || dow === 6) ? 1.15 + rand() * 0.1 : 1.0;
+    const spikeFactor = rand() < 0.03 ? 1.5 + rand() * 1.0 : 1.0; // random viral spikes
+    const noise = 0.7 + rand() * 0.6; // +-30% day noise
 
-    // Platform split
-    const iosRatio = 0.55 + rand() * 0.1;
+    const baseUsers = Math.round(
+      (80 + progress * 300) * seasonalFactor * weekendFactor * spikeFactor * noise
+    );
+
+    // Cats derived from users: normal dist, mean ~2.2, capped at 5
+    const catsPerUserToday = clamp(randNormal(2.2, 0.8), 0.5, 5.0);
+    const baseCats = Math.round(baseUsers * catsPerUserToday);
+
+    // Shots derived from cats: normal dist, mean ~4.5, capped at 10
+    const shotsPerCatToday = clamp(randNormal(4.5, 2.0), 1.0, 10.0);
+    const baseShots = Math.round(baseCats * shotsPerCatToday);
+
+    // Platform split: varies wildly by day (global average ~38% iOS)
+    const iosRatio = clamp(randNormal(0.38, 0.12), 0.10, 0.75);
     const usersIos = Math.round(baseUsers * iosRatio);
     const usersAndroid = baseUsers - usersIos;
 
-    // Cat type split
-    const strayRatio = 0.6 + rand() * 0.15;
+    // Cat type split: stray dominates but varies a lot
+    const strayRatio = clamp(randNormal(0.62, 0.15), 0.25, 0.90);
     const catsStray = Math.round(baseCats * strayRatio);
     const catsHome = baseCats - catsStray;
 
-    // DAU/MAU
-    const dauMau = 0.15 + progress * 0.1 + rand() * 0.05;
+    // DAU/MAU grows over time with noise
+    const dauMau = clamp(
+      0.12 + progress * 0.12 + randNormal(0, 0.03),
+      0.05, 0.40
+    );
 
     days.push({
       date: dateStr,
@@ -79,7 +113,7 @@ function generateDailyData() {
       newCatsStray: catsStray,
       newCatsHome: catsHome,
       shots: baseShots,
-      dauMau: Math.min(dauMau, 0.35),
+      dauMau,
     });
   }
   return days;
@@ -87,58 +121,55 @@ function generateDailyData() {
 
 export const dailyData = generateDailyData();
 
-// --- Country-level aggregation ---
+// --- Country-level aggregation with distinct profiles ---
 function generateCountryData() {
-  const weights = {};
-  let totalWeight = 0;
-  COUNTRIES.forEach((c) => {
-    const w = randFloat(1, 50);
-    weights[c.code] = w;
-    totalWeight += w;
-  });
-
-  const totalUsers = dailyData.reduce((s, d) => s + d.newUsers, 0);
-  const totalCats = dailyData.reduce((s, d) => s + d.newCats, 0);
-  const totalShots = dailyData.reduce((s, d) => s + d.shots, 0);
-
   return COUNTRIES.map((c) => {
-    const ratio = weights[c.code] / totalWeight;
-    return {
-      code: c.code,
-      name: c.name,
-      users: Math.round(totalUsers * ratio),
-      cats: Math.round(totalCats * ratio),
-      shots: Math.round(totalShots * ratio),
-    };
+    const userShare = c.userWeight / totalUserWeight;
+    const totalUsers = dailyData.reduce((s, d) => s + d.newUsers, 0);
+    const users = Math.round(totalUsers * userShare * clamp(randNormal(1.0, 0.15), 0.6, 1.5));
+    const cats = Math.round(users * clamp(randNormal(c.catsPerUser, 0.5), 0.5, 5.0));
+    const shots = Math.round(cats * clamp(randNormal(c.shotsPerCat, 1.5), 1.0, 10.0));
+    return { code: c.code, name: c.name, users, cats, shots };
   });
 }
 
 export const countryData = generateCountryData();
 
-// Per-country daily data for filtering
+// Per-country daily data with country-specific profiles
 function generateCountryDailyData() {
   const result = {};
-  const weights = {};
-  let totalWeight = 0;
   COUNTRIES.forEach((c) => {
-    const w = randFloat(1, 50);
-    weights[c.code] = w;
-    totalWeight += w;
-  });
+    const userShare = c.userWeight / totalUserWeight;
+    result[c.code] = dailyData.map((d) => {
+      const dayNoise = clamp(randNormal(1.0, 0.25), 0.4, 2.0);
+      const users = Math.max(1, Math.round(d.newUsers * userShare * dayNoise));
 
-  COUNTRIES.forEach((c) => {
-    const ratio = weights[c.code] / totalWeight;
-    result[c.code] = dailyData.map((d) => ({
-      ...d,
-      newUsers: Math.round(d.newUsers * ratio * (0.8 + rand() * 0.4)),
-      newUsersIos: Math.round(d.newUsersIos * ratio * (0.8 + rand() * 0.4)),
-      newUsersAndroid: Math.round(d.newUsersAndroid * ratio * (0.8 + rand() * 0.4)),
-      newCats: Math.round(d.newCats * ratio * (0.8 + rand() * 0.4)),
-      newCatsStray: Math.round(d.newCatsStray * ratio * (0.8 + rand() * 0.4)),
-      newCatsHome: Math.round(d.newCatsHome * ratio * (0.8 + rand() * 0.4)),
-      shots: Math.round(d.shots * ratio * (0.8 + rand() * 0.4)),
-      dauMau: d.dauMau * (0.9 + rand() * 0.2),
-    }));
+      const catsPerU = clamp(randNormal(c.catsPerUser, 0.6), 0.5, 5.0);
+      const cats = Math.round(users * catsPerU);
+
+      const shotsPerC = clamp(randNormal(c.shotsPerCat, 1.5), 1.0, 10.0);
+      const shots = Math.round(cats * shotsPerC);
+
+      const iosR = clamp(randNormal(c.iosShare, 0.08), 0.02, 0.95);
+      const usersIos = Math.round(users * iosR);
+      const usersAndroid = users - usersIos;
+
+      const strayR = clamp(randNormal(0.62, 0.15), 0.25, 0.90);
+      const catsStray = Math.round(cats * strayR);
+      const catsHome = cats - catsStray;
+
+      return {
+        date: d.date,
+        newUsers: users,
+        newUsersIos: usersIos,
+        newUsersAndroid: usersAndroid,
+        newCats: cats,
+        newCatsStray: catsStray,
+        newCatsHome: catsHome,
+        shots,
+        dauMau: clamp(d.dauMau * randNormal(1.0, 0.1), 0.03, 0.45),
+      };
+    });
   });
   return result;
 }
@@ -154,28 +185,35 @@ export const AGE_GROUPS = [
 ];
 
 function generateAgeSexData() {
-  return AGE_GROUPS.map((group) => {
-    const maleBase = randInt(500, 5000);
-    const femaleBase = randInt(500, 5000);
+  // Bell curve peaking at 22-30 age range
+  return AGE_GROUPS.map((group, idx) => {
+    const peak = 4; // index of 25-27
+    const dist = Math.abs(idx - peak);
+    const base = Math.round(5000 * Math.exp(-0.12 * dist * dist));
     return {
       ageGroup: group,
-      male: maleBase,
-      female: femaleBase,
+      male: Math.max(50, Math.round(base * clamp(randNormal(1.0, 0.2), 0.5, 1.6))),
+      female: Math.max(50, Math.round(base * clamp(randNormal(0.85, 0.2), 0.4, 1.5))),
     };
   });
 }
 
 export const ageSexData = generateAgeSexData();
 
-// Per-country age/sex data
 function generateCountryAgeSexData() {
   const result = {};
   COUNTRIES.forEach((c) => {
-    result[c.code] = AGE_GROUPS.map((group) => ({
-      ageGroup: group,
-      male: randInt(50, 1000),
-      female: randInt(50, 1000),
-    }));
+    const scale = c.userWeight / 100;
+    result[c.code] = AGE_GROUPS.map((group, idx) => {
+      const peak = 3 + randInt(0, 3);
+      const dist = Math.abs(idx - peak);
+      const base = Math.round(1000 * scale * Math.exp(-0.10 * dist * dist));
+      return {
+        ageGroup: group,
+        male: Math.max(5, Math.round(base * clamp(randNormal(1.0, 0.3), 0.3, 2.0))),
+        female: Math.max(5, Math.round(base * clamp(randNormal(0.85, 0.3), 0.3, 1.8))),
+      };
+    });
   });
   return result;
 }
@@ -213,12 +251,10 @@ export function computeKpis(data, prevData) {
 export function filterData(data, { period, country, platform }) {
   let filtered = country === 'ALL' ? data : (countryDailyData[country] || []);
 
-  // Period filter: get last N days
   const periodDays = { D: 1, W: 7, M: 30, Y: 365, ALL: filtered.length };
   const days = periodDays[period] || 30;
   filtered = filtered.slice(-days);
 
-  // Platform filter: zero out the opposite platform
   if (platform === 'iOS') {
     filtered = filtered.map((d) => ({
       ...d,
@@ -241,7 +277,6 @@ export function getPreviousPeriodData(data, { period, country, platform }) {
   const periodDays = { D: 1, W: 7, M: 30, Y: 365, ALL: source.length };
   const days = periodDays[period] || 30;
 
-  // Get the period before the current one
   const end = source.length - days;
   if (end <= 0) return null;
   const start = Math.max(0, end - days);
@@ -259,53 +294,40 @@ export function getPreviousPeriodData(data, { period, country, platform }) {
 // --- Aggregate for charts ---
 export function aggregateForChart(data, period) {
   if (period === 'D') {
-    // 24 hourly bars (fake: divide day's data into 24)
     const day = data[data.length - 1] || data[0];
     if (!day) return [];
     return Array.from({ length: 24 }, (_, h) => ({
       label: `${h}:00`,
-      ...spreadValues(day, 24),
+      ...spreadValues(day, 24, h),
     }));
   }
   if (period === 'W') {
-    // 7 daily bars
     return data.slice(-7).map((d) => ({
-      label: d.date.slice(5), // MM-DD
+      label: d.date.slice(5),
       ...d,
     }));
   }
   if (period === 'M') {
-    // 30 daily bars
     return data.slice(-30).map((d) => ({
-      label: d.date.slice(8), // DD
+      label: d.date.slice(8),
       ...d,
     }));
   }
   if (period === 'Y') {
-    // 12 monthly bars
-    const months = {};
-    data.forEach((d) => {
-      const m = d.date.slice(0, 7); // YYYY-MM
-      if (!months[m]) months[m] = { ...d, label: m.slice(2) }; // YY-MM
-      else {
-        months[m].newUsers += d.newUsers;
-        months[m].newUsersIos += d.newUsersIos;
-        months[m].newUsersAndroid += d.newUsersAndroid;
-        months[m].newCats += d.newCats;
-        months[m].newCatsStray += d.newCatsStray;
-        months[m].newCatsHome += d.newCatsHome;
-        months[m].shots += d.shots;
-        months[m].dauMau = (months[m].dauMau + d.dauMau) / 2;
-      }
-    });
-    return Object.values(months).slice(-12);
+    return aggregateMonths(data).slice(-12);
   }
-  // ALL
+  return aggregateMonths(data);
+}
+
+function aggregateMonths(data) {
   const months = {};
+  const counts = {};
   data.forEach((d) => {
     const m = d.date.slice(0, 7);
-    if (!months[m]) months[m] = { ...d, label: m.slice(2) };
-    else {
+    if (!months[m]) {
+      months[m] = { ...d, label: m.slice(2) };
+      counts[m] = 1;
+    } else {
       months[m].newUsers += d.newUsers;
       months[m].newUsersIos += d.newUsersIos;
       months[m].newUsersAndroid += d.newUsersAndroid;
@@ -313,21 +335,33 @@ export function aggregateForChart(data, period) {
       months[m].newCatsStray += d.newCatsStray;
       months[m].newCatsHome += d.newCatsHome;
       months[m].shots += d.shots;
-      months[m].dauMau = (months[m].dauMau + d.dauMau) / 2;
+      months[m].dauMau += d.dauMau;
+      counts[m]++;
     }
+  });
+  // Average DAU/MAU per month
+  Object.keys(months).forEach((m) => {
+    months[m].dauMau /= counts[m];
   });
   return Object.values(months);
 }
 
-function spreadValues(day, n) {
+function spreadValues(day, n, hour) {
+  // Hourly curve: peak at 12-20, low at 2-6
+  const hourFactor = 0.3 + 0.7 * Math.exp(-0.03 * Math.pow(hour - 16, 2));
+  const total = Array.from({ length: 24 }, (_, h) =>
+    0.3 + 0.7 * Math.exp(-0.03 * Math.pow(h - 16, 2))
+  ).reduce((a, b) => a + b, 0);
+  const share = hourFactor / total;
+
   return {
-    newUsers: Math.round(day.newUsers / n),
-    newUsersIos: Math.round(day.newUsersIos / n),
-    newUsersAndroid: Math.round(day.newUsersAndroid / n),
-    newCats: Math.round(day.newCats / n),
-    newCatsStray: Math.round(day.newCatsStray / n),
-    newCatsHome: Math.round(day.newCatsHome / n),
-    shots: Math.round(day.shots / n),
+    newUsers: Math.round(day.newUsers * share),
+    newUsersIos: Math.round(day.newUsersIos * share),
+    newUsersAndroid: Math.round(day.newUsersAndroid * share),
+    newCats: Math.round(day.newCats * share),
+    newCatsStray: Math.round(day.newCatsStray * share),
+    newCatsHome: Math.round(day.newCatsHome * share),
+    shots: Math.round(day.shots * share),
     dauMau: day.dauMau,
   };
 }

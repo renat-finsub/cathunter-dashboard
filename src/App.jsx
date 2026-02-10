@@ -64,11 +64,11 @@ function App() {
           </p>
         </div>
 
-        {/* KPI Cards */}
-        <KpiCards kpis={kpis} />
-
         {/* Filters */}
         <Filters filters={filters} onChange={setFilters} />
+
+        {/* KPI Cards */}
+        <KpiCards kpis={kpis} />
 
         {/* Charts 2x2 Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
