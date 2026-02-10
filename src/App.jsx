@@ -43,13 +43,25 @@ function App() {
     [filtered, filters.period]
   );
 
-  const ageData = useMemo(
-    () =>
-      filters.country === 'ALL'
-        ? ageSexData
-        : countryAgeSexData[filters.country] || ageSexData,
-    [filters.country]
-  );
+  const ageData = useMemo(() => {
+    const base = filters.country === 'ALL'
+      ? ageSexData
+      : countryAgeSexData[filters.country] || ageSexData;
+    if (filters.platform === 'ALL') return base;
+
+    // Compute platform ratio from filtered daily data
+    const totIos = filtered.reduce((s, d) => s + d.newUsersIos, 0);
+    const totAnd = filtered.reduce((s, d) => s + d.newUsersAndroid, 0);
+    const total = totIos + totAnd;
+    if (total === 0) return base;
+    const ratio = filters.platform === 'iOS' ? totIos / total : totAnd / total;
+
+    return base.map((d) => ({
+      ageGroup: d.ageGroup,
+      male: Math.round(d.male * ratio),
+      female: Math.round(d.female * ratio),
+    }));
+  }, [filters.country, filters.platform, filtered]);
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 lg:p-6">
