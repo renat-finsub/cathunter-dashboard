@@ -146,7 +146,12 @@ function generateCountryDailyData() {
 export const countryDailyData = generateCountryDailyData();
 
 // --- Age/Sex distribution ---
-export const AGE_GROUPS = ['13-19', '20-29', '30-39', '40-49', '50+'];
+export const AGE_GROUPS = [
+  '13-15', '16-18', '19-21', '22-24', '25-27',
+  '28-30', '31-33', '34-36', '37-39', '40-42',
+  '43-45', '46-48', '49-51', '52-54', '55-57',
+  '58-60', '61-64', '65-69', '70-74', '75+',
+];
 
 function generateAgeSexData() {
   return AGE_GROUPS.map((group) => {

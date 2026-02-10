@@ -1,9 +1,9 @@
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
+  ResponsiveContainer, ReferenceLine,
 } from 'recharts';
 
 export default function AgeSexChart({ data }) {
-  // Transform data for butterfly/tornado chart: male goes negative
   const chartData = data.map((d) => ({
     ageGroup: d.ageGroup,
     Male: -d.male,
@@ -19,10 +19,12 @@ export default function AgeSexChart({ data }) {
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         New Users&apos; Age/Sex
       </h3>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={480}>
         <BarChart
           data={chartData}
           layout="vertical"
+          barSize={14}
+          barGap={-14}
           margin={{ top: 5, right: 10, left: 10, bottom: 5 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -35,15 +37,14 @@ export default function AgeSexChart({ data }) {
           <YAxis
             type="category"
             dataKey="ageGroup"
-            tick={{ fontSize: 10 }}
-            width={40}
+            tick={{ fontSize: 9 }}
+            width={36}
           />
-          <Tooltip
-            formatter={(value, name) => [Math.abs(value), name]}
-          />
+          <Tooltip formatter={(value, name) => [Math.abs(value), name]} />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <Bar dataKey="Male" fill="#3b82f6" radius={[2, 0, 0, 2]} />
-          <Bar dataKey="Female" fill="#ec4899" radius={[0, 2, 2, 0]} />
+          <ReferenceLine x={0} stroke="#94a3b8" />
+          <Bar dataKey="Male" fill="#3b82f6" />
+          <Bar dataKey="Female" fill="#ec4899" />
         </BarChart>
       </ResponsiveContainer>
     </div>
