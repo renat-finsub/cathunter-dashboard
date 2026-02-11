@@ -3198,14 +3198,15 @@ function hashCode(str) {
   return Math.abs(hash);
 }
 
-export function generateCountryCatDots(countryCode, catType = 'ALL', maxDots = 500) {
-  const cities = CAT_CITIES.filter((c) => c.countryCode === countryCode);
+export function generateCountryCatDots(countryCode, catType = 'ALL', maxDots = 500, regionId = null) {
+  let cities = CAT_CITIES.filter((c) => c.countryCode === countryCode);
+  if (regionId) cities = cities.filter((c) => c.regionId === regionId);
   if (cities.length === 0) return [];
 
   const country = COUNTRIES.find((c) => c.code === countryCode);
   const strayShare = country?.strayShare ?? 0.62;
 
-  const rng = seededRandom(hashCode(countryCode) + 7777);
+  const rng = seededRandom(hashCode(countryCode + (regionId || '')) + 7777);
 
   const totalWeight = cities.reduce((s, c) => s + c.weight, 0);
   const dots = [];

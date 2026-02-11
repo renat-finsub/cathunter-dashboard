@@ -214,19 +214,21 @@ export default function WorldHeatmap({ filters, onChange }) {
     return { scale: 135, center: [0, 25] };
   }, [selectedCountry, zoomedRegion]);
 
-  // Cat dots for region zoom view — count scales with period, filtered to land
+  // Cat dots for region zoom view — dot count matches the region's metric
   const regionDots = useMemo(() => {
     if (!zoomedRegion || !selectedCountry) return [];
-    const periodMax = { D: 80, W: 150, M: 300, Y: 450, ALL: 500 };
-    const maxDots = periodMax[period] || 500;
-    const allDots = generateCountryCatDots(selectedCountry.code, catType, maxDots);
-    const regionFiltered = allDots.filter((d) => d.regionId === zoomedRegion.id);
+    const regionInfo = regionData[zoomedRegion.isoCode];
+    const regionCats = regionInfo?.cats || 0;
+    // Dot count = region metric, capped at 500 for performance
+    const dotCount = Math.min(regionCats, 500);
+    if (dotCount <= 0) return [];
+    const allDots = generateCountryCatDots(selectedCountry.code, catType, dotCount, zoomedRegion.id);
     // Filter out dots that fall outside the region polygon (e.g. in water)
     if (zoomedRegion.geoData) {
-      return regionFiltered.filter((d) => pointInGeometry(d.coordinates, zoomedRegion.geoData));
+      return allDots.filter((d) => pointInGeometry(d.coordinates, zoomedRegion.geoData));
     }
-    return regionFiltered;
-  }, [zoomedRegion, selectedCountry, catType, period]);
+    return allDots;
+  }, [zoomedRegion, selectedCountry, catType, period, regionData]);
 
   // Region data for country drill-down — distribute country metrics across admin regions
   const regionData = useMemo(() => {
