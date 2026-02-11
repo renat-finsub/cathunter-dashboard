@@ -4,20 +4,20 @@ import {
 
 export default function DauMauChart({ data }) {
   const chartData = data.map((d) => ({
-    date: d.date.slice(5), // MM-DD
+    label: d.label ?? d.date?.slice(5) ?? '',
     dauMau: Math.round(d.dauMau * 100) / 100,
   }));
 
   return (
-    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 col-span-2">
+    <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
       <h3 className="text-sm font-semibold text-gray-700 mb-3">
         DAU/MAU
       </h3>
-      <ResponsiveContainer width="100%" height={260}>
+      <ResponsiveContainer width="100%" height={320}>
         <LineChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis
-            dataKey="date"
+            dataKey="label"
             tick={{ fontSize: 10 }}
             interval="preserveStartEnd"
           />
