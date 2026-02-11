@@ -1,9 +1,9 @@
 import { formatNumber, formatDauMau, formatChange } from '../utils/formatNumber';
 
 const cards = [
-  { key: 'users', label: 'Users Total', isDauMau: false },
-  { key: 'cats', label: 'Cats Total', isDauMau: false },
-  { key: 'shots', label: 'Shots in 30d', isDauMau: false },
+  { key: 'users', label: 'Users', isDauMau: false },
+  { key: 'cats', label: 'Cats', isDauMau: false },
+  { key: 'shots', label: 'Shots', isDauMau: false },
   { key: 'dauMau', label: 'DAU/MAU', isDauMau: true },
 ];
 

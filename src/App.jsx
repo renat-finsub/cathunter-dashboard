@@ -6,7 +6,7 @@ import NewCatsChart from './components/NewCatsChart';
 import AgeSexChart from './components/AgeSexChart';
 import DauMauChart from './components/DauMauChart';
 import WorldHeatmap from './components/WorldHeatmap';
-import RetentionChart from './components/RetentionChart';
+import EngagementChart from './components/EngagementChart';
 import {
   dailyData,
   filterData,
@@ -15,18 +15,18 @@ import {
   aggregateForChart,
   ageSexData,
   countryAgeSexData,
-  retentionByPlatform,
-  retentionByCountry,
   COUNTRIES,
   AGE_GROUPS,
+  distributeInt,
 } from './data/fakeData';
 
 function App() {
   const [filters, setFilters] = useState({
-    period: 'M',
+    period: 'ALL',
     continent: 'ALL',
     country: 'ALL',
     platform: 'ALL',
+    catType: 'ALL',
   });
 
   const filtered = useMemo(
@@ -49,13 +49,9 @@ function App() {
     [filtered, filters.period]
   );
 
-  // Full-year data for the same geo scope (to compute period ratio)
-  const fullYearFiltered = useMemo(
-    () => filterData(dailyData, { ...filters, period: 'ALL', platform: 'ALL' }),
-    [filters.continent, filters.country]
-  );
-
   const ageData = useMemo(() => {
+    const safe = (v) => (Number.isFinite(v) ? v : 0);
+
     let base;
     if (filters.country !== 'ALL') {
       base = countryAgeSexData[filters.country] || ageSexData;
@@ -73,39 +69,33 @@ function App() {
       base = ageSexData;
     }
 
-    // Scale by period: ratio of users in selected period vs full year
-    const fullUsers = fullYearFiltered.reduce((s, d) => s + d.newUsers, 0);
-    const periodUsers = filtered.reduce((s, d) => s + d.newUsers, 0);
-    let periodRatio = fullUsers > 0 ? periodUsers / fullUsers : 1;
-
-    // Scale by platform
-    let platformRatio = 1;
-    if (filters.platform !== 'ALL') {
-      const totIos = filtered.reduce((s, d) => s + d.newUsersIos, 0);
-      const totAnd = filtered.reduce((s, d) => s + d.newUsersAndroid, 0);
-      const total = totIos + totAnd;
-      if (total > 0) {
-        platformRatio = filters.platform === 'iOS' ? totIos / total : totAnd / total;
-      }
+    const totalUsers = filtered.reduce((s, d) => s + safe(d.newUsers), 0);
+    if (totalUsers <= 0) {
+      return base.map((d) => ({ ageGroup: d.ageGroup, male: 0, female: 0 }));
     }
 
-    const scale = periodRatio * platformRatio;
-    if (scale === 1) return base;
+    // Treat the base age/sex data as weights and distribute the filtered period users
+    // so the chart always matches the selected filters (period/platform/type/geo).
+    const ageWeights = base.map((d) => Math.max(0, safe(d.male)) + Math.max(0, safe(d.female)));
+    const totalsByAge = distributeInt(totalUsers, ageWeights);
 
-    return base.map((d) => ({
-      ageGroup: d.ageGroup,
-      male: Math.max(1, Math.round(d.male * scale)),
-      female: Math.max(1, Math.round(d.female * scale)),
-    }));
-  }, [filters, filtered, fullYearFiltered]);
+    function splitSex(total, maleW, femaleW) {
+      if (total <= 0) return [0, 0];
+      if (maleW <= 0 && femaleW <= 0) {
+        const male = Math.floor(total / 2);
+        return [male, total - male];
+      }
+      return distributeInt(total, [maleW, femaleW]);
+    }
 
-  const retentionData = useMemo(() => {
-    const platform = filters.platform;
-    if (filters.country === 'ALL') return retentionByPlatform[platform] || retentionByPlatform.ALL;
-    const countryRet = retentionByCountry[filters.country];
-    if (!countryRet) return retentionByPlatform[platform] || retentionByPlatform.ALL;
-    return countryRet[platform] || countryRet.ALL;
-  }, [filters.country, filters.platform]);
+    return base.map((d, idx) => {
+      const total = totalsByAge[idx] || 0;
+      const maleW = Math.max(0, safe(d.male));
+      const femaleW = Math.max(0, safe(d.female));
+      const [male, female] = splitSex(total, maleW, femaleW);
+      return { ageGroup: d.ageGroup, male, female };
+    });
+  }, [filters, filtered]);
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 lg:p-6">
@@ -131,7 +121,7 @@ function App() {
           <NewUsersChart data={chartData} />
           <NewCatsChart data={chartData} />
           <AgeSexChart data={ageData} />
-          <RetentionChart data={retentionData} />
+          <EngagementChart data={chartData} />
         </div>
 
         {/* DAU/MAU Line Chart */}
@@ -140,7 +130,10 @@ function App() {
         </div>
 
         {/* World Heatmap */}
-        <WorldHeatmap />
+        <WorldHeatmap
+          key={`${filters.continent}:${filters.country}`}
+          filters={filters}
+        />
       </div>
     </div>
   );
