@@ -458,47 +458,31 @@ export default function WorldHeatmap({ filters, onChange }) {
                   const displayName = regionInfo?.name || geo.properties.name;
                   const isZoomed = zoomedRegion?.isoCode === isoCode;
 
+                  const regionFill = getRegionColor(cats);
+
                   return (
                     <Geography
                       key={geo.rsmKey}
                       geography={geo}
-                      fill={
-                        zoomedRegion
-                          ? isZoomed ? '#eef2ff' : '#f1f5f9'
-                          : getRegionColor(cats)
-                      }
-                      stroke={
-                        zoomedRegion
-                          ? isZoomed ? '#3b82f6' : 'rgba(203,213,225,0.6)'
-                          : 'rgba(255,255,255,0.7)'
-                      }
+                      fill={regionFill}
+                      stroke={isZoomed ? '#3b82f6' : 'rgba(255,255,255,0.7)'}
                       strokeWidth={isZoomed ? 1.5 : 0.5}
                       onMouseEnter={() => {
-                        if (!zoomedRegion) {
-                          setTooltip({
-                            type: 'region',
-                            name: displayName,
-                            users: regionInfo?.users ?? 0,
-                            cats,
-                            shots: regionInfo?.shots ?? 0,
-                          });
-                        }
+                        setTooltip({
+                          type: 'region',
+                          name: displayName,
+                          users: regionInfo?.users ?? 0,
+                          cats,
+                          shots: regionInfo?.shots ?? 0,
+                        });
                       }}
                       onMouseLeave={() => setTooltip(null)}
-                      onClick={() => {
-                        if (zoomedRegion) {
-                          handleBackToCountry();
-                        } else {
-                          handleRegionClick(isoCode, geo);
-                        }
-                      }}
+                      onClick={() => handleRegionClick(isoCode, geo)}
                       style={{
                         default: { outline: 'none', cursor: 'pointer' },
                         hover: {
                           outline: 'none',
-                          fill: zoomedRegion
-                            ? (isZoomed ? '#eef2ff' : '#e2e8f0')
-                            : '#93c5fd',
+                          fill: '#93c5fd',
                         },
                         pressed: { outline: 'none' },
                       }}
@@ -614,7 +598,7 @@ export default function WorldHeatmap({ filters, onChange }) {
 
       <div className="mt-1 text-[11px] text-gray-400">
         {zoomedRegion
-          ? `Click anywhere to go back to ${selectedCountry?.name || 'country'}.`
+          ? 'Click a neighboring region to switch. Use breadcrumb to go back.'
           : !isCountryView
             ? 'Click a country to explore.'
             : 'Click a region to zoom in.'}
