@@ -107,19 +107,20 @@ function detectInsights(data) {
   }
 
   // --- 3. DAU/MAU movement ---
+  // Compare first-quarter average to the actual last value (must match KPI card)
   if (n >= 7) {
     const q = Math.max(1, Math.floor(n / 4));
     const early = avg(dauMau.slice(0, q));
-    const late = avg(dauMau.slice(-q));
+    const latest = dauMau[n - 1];
 
     if (early > 0.01) {
-      const change = ((late - early) / early) * 100;
+      const change = ((latest - early) / early) * 100;
       if (Math.abs(change) > 8) {
         const dir = change > 0 ? 'up' : 'down';
         candidates.push({
           type: change > 0 ? 'positive' : 'warning',
           priority: Math.abs(change) * 0.8,
-          text: `DAU/MAU ${dir} ${ctx} (${period}): ${early.toFixed(2)} → ${late.toFixed(2)} (${change > 0 ? '+' : ''}${change.toFixed(0)}%)`,
+          text: `DAU/MAU ${dir} ${ctx} (${period}): ${early.toFixed(2)} → ${latest.toFixed(2)} (${change > 0 ? '+' : ''}${change.toFixed(0)}%)`,
         });
       }
     }
