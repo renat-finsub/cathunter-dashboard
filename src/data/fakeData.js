@@ -257,16 +257,34 @@ export const ADMIN_REGIONS = [
   { id: 'FR-75', countryCode: 'FRA', name: 'Paris', isoCode: 'FR-75', center: [2.3, 48.9], weight: 9 },
   { id: 'FR-69', countryCode: 'FRA', name: 'Rhone', isoCode: 'FR-69', center: [4.8, 45.8], weight: 5 },
   { id: 'FR-13', countryCode: 'FRA', name: 'Bouches-du-Rhone', isoCode: 'FR-13', center: [5.1, 43.5], weight: 4 },
+  { id: 'FR-31', countryCode: 'FRA', name: 'Haute-Garonne', isoCode: 'FR-31', center: [1.4, 43.6], weight: 3 },
+  { id: 'FR-33', countryCode: 'FRA', name: 'Gironde', isoCode: 'FR-33', center: [-0.6, 44.8], weight: 3 },
+  { id: 'FR-06', countryCode: 'FRA', name: 'Alpes-Maritimes', isoCode: 'FR-06', center: [7.0, 43.9], weight: 3 },
+  { id: 'FR-59', countryCode: 'FRA', name: 'Nord', isoCode: 'FR-59', center: [3.1, 50.3], weight: 3 },
+  { id: 'FR-44', countryCode: 'FRA', name: 'Loire-Atlantique', isoCode: 'FR-44', center: [-1.6, 47.2], weight: 2 },
 
   // ESP — provinces (Natural Earth uses provinces)
   { id: 'ES-M', countryCode: 'ESP', name: 'Madrid', isoCode: 'ES-M', center: [-3.7, 40.4], weight: 8 },
   { id: 'ES-B', countryCode: 'ESP', name: 'Barcelona', isoCode: 'ES-B', center: [2.2, 41.4], weight: 7 },
+  { id: 'ES-V', countryCode: 'ESP', name: 'Valencia', isoCode: 'ES-V', center: [-0.4, 39.5], weight: 5 },
   { id: 'ES-SE', countryCode: 'ESP', name: 'Sevilla', isoCode: 'ES-SE', center: [-5.9, 37.4], weight: 5 },
+  { id: 'ES-MA', countryCode: 'ESP', name: 'Malaga', isoCode: 'ES-MA', center: [-4.4, 36.7], weight: 4 },
+  { id: 'ES-BI', countryCode: 'ESP', name: 'Bizkaia', isoCode: 'ES-BI', center: [-2.9, 43.2], weight: 3 },
+  { id: 'ES-Z', countryCode: 'ESP', name: 'Zaragoza', isoCode: 'ES-Z', center: [-0.9, 41.7], weight: 3 },
+  { id: 'ES-A', countryCode: 'ESP', name: 'Alicante', isoCode: 'ES-A', center: [-0.5, 38.3], weight: 3 },
+  { id: 'ES-GI', countryCode: 'ESP', name: 'Gerona', isoCode: 'ES-GI', center: [2.8, 42.0], weight: 2 },
+  { id: 'ES-T', countryCode: 'ESP', name: 'Tarragona', isoCode: 'ES-T', center: [1.2, 41.1], weight: 2 },
+  { id: 'ES-MU', countryCode: 'ESP', name: 'Murcia', isoCode: 'ES-MU', center: [-1.1, 37.9], weight: 2 },
 
   // ITA — provinces (Natural Earth uses provinces)
   { id: 'IT-MI', countryCode: 'ITA', name: 'Milano', isoCode: 'IT-MI', center: [9.2, 45.5], weight: 8 },
   { id: 'IT-RM', countryCode: 'ITA', name: 'Roma', isoCode: 'IT-RM', center: [12.5, 41.9], weight: 6 },
   { id: 'IT-NA', countryCode: 'ITA', name: 'Napoli', isoCode: 'IT-NA', center: [14.3, 40.9], weight: 5 },
+  { id: 'IT-TO', countryCode: 'ITA', name: 'Turin', isoCode: 'IT-TO', center: [7.7, 45.1], weight: 4 },
+  { id: 'IT-FI', countryCode: 'ITA', name: 'Firenze', isoCode: 'IT-FI', center: [11.3, 43.8], weight: 4 },
+  { id: 'IT-BO', countryCode: 'ITA', name: 'Bologna', isoCode: 'IT-BO', center: [11.3, 44.5], weight: 3 },
+  { id: 'IT-VE', countryCode: 'ITA', name: 'Venezia', isoCode: 'IT-VE', center: [12.3, 45.4], weight: 3 },
+  { id: 'IT-PA', countryCode: 'ITA', name: 'Palermo', isoCode: 'IT-PA', center: [13.4, 38.1], weight: 3 },
 
   // RUS — federal subjects
   { id: 'RU-MOW', countryCode: 'RUS', name: 'Moscow', isoCode: 'RU-MOS', center: [37.6, 55.8], weight: 10 },
@@ -290,6 +308,10 @@ export const ADMIN_REGIONS = [
   { id: 'TR-06', countryCode: 'TUR', name: 'Ankara', isoCode: 'TR-06', center: [32.9, 39.9], weight: 6 },
   { id: 'TR-35', countryCode: 'TUR', name: 'Izmir', isoCode: 'TR-35', center: [27.1, 38.4], weight: 5 },
   { id: 'TR-07', countryCode: 'TUR', name: 'Antalya', isoCode: 'TR-07', center: [30.7, 36.9], weight: 4 },
+  { id: 'TR-16', countryCode: 'TUR', name: 'Bursa', isoCode: 'TR-16', center: [29.1, 40.2], weight: 3 },
+  { id: 'TR-01', countryCode: 'TUR', name: 'Adana', isoCode: 'TR-01', center: [35.3, 37.0], weight: 3 },
+  { id: 'TR-42', countryCode: 'TUR', name: 'Konya', isoCode: 'TR-42', center: [32.5, 37.9], weight: 2 },
+  { id: 'TR-21', countryCode: 'TUR', name: 'Diyarbakir', isoCode: 'TR-21', center: [40.2, 37.9], weight: 2 },
 
   // IND — states
   { id: 'IN-MH', countryCode: 'IND', name: 'Maharashtra', isoCode: 'IN-MH', center: [75.7, 19.7], weight: 9 },
@@ -356,10 +378,19 @@ export const CAT_CITIES = [
   { id: 'USA-CHI', countryCode: 'USA', regionId: 'US-IL', name: 'Chicago', coordinates: [-87.6298, 41.8781], weight: 8, spread: 0.22 },
   { id: 'USA-NYC', countryCode: 'USA', regionId: 'US-NY', name: 'New York', coordinates: [-74.0060, 40.7128], weight: 10, spread: 0.22 },
 
+  { id: 'USA-LA', countryCode: 'USA', regionId: 'US-CA', name: 'Los Angeles', coordinates: [-118.2437, 34.0522], weight: 9, spread: 0.25 },
+  { id: 'USA-HOU', countryCode: 'USA', regionId: 'US-TX', name: 'Houston', coordinates: [-95.3698, 29.7604], weight: 7, spread: 0.22 },
+  { id: 'USA-MIA', countryCode: 'USA', regionId: 'US-FL', name: 'Miami', coordinates: [-80.1918, 25.7617], weight: 6, spread: 0.20 },
+  { id: 'USA-PHL', countryCode: 'USA', regionId: 'US-PA', name: 'Philadelphia', coordinates: [-75.1652, 39.9526], weight: 5, spread: 0.18 },
+  { id: 'USA-CLB', countryCode: 'USA', regionId: 'US-OH', name: 'Columbus', coordinates: [-82.9988, 39.9612], weight: 4, spread: 0.18 },
+  { id: 'USA-SEA', countryCode: 'USA', regionId: 'US-WA', name: 'Seattle', coordinates: [-122.3321, 47.6062], weight: 5, spread: 0.18 },
+
   // CAN
   { id: 'CAN-VAN', countryCode: 'CAN', regionId: 'CA-BC', name: 'Vancouver', coordinates: [-123.1207, 49.2827], weight: 6, spread: 0.20 },
   { id: 'CAN-TOR', countryCode: 'CAN', regionId: 'CA-ON', name: 'Toronto', coordinates: [-79.3832, 43.6532], weight: 7, spread: 0.18 },
   { id: 'CAN-MTL', countryCode: 'CAN', regionId: 'CA-QC', name: 'Montreal', coordinates: [-73.5673, 45.5017], weight: 5, spread: 0.18 },
+
+  { id: 'CAN-CGY', countryCode: 'CAN', regionId: 'CA-AB', name: 'Calgary', coordinates: [-114.0719, 51.0447], weight: 4, spread: 0.18 },
 
   // MEX
   { id: 'MEX-MTY', countryCode: 'MEX', regionId: 'MX-NLE', name: 'Monterrey', coordinates: [-100.3161, 25.6866], weight: 5, spread: 0.20 },
@@ -400,16 +431,34 @@ export const CAT_CITIES = [
   { id: 'FRA-PAR', countryCode: 'FRA', regionId: 'FR-75', name: 'Paris', coordinates: [2.3522, 48.8566], weight: 7, spread: 0.10 },
   { id: 'FRA-LYO', countryCode: 'FRA', regionId: 'FR-69', name: 'Lyon', coordinates: [4.8357, 45.7640], weight: 4, spread: 0.12 },
   { id: 'FRA-MRS', countryCode: 'FRA', regionId: 'FR-13', name: 'Marseille', coordinates: [5.3698, 43.2965], weight: 4, spread: 0.12 },
+  { id: 'FRA-TLS', countryCode: 'FRA', regionId: 'FR-31', name: 'Toulouse', coordinates: [1.4442, 43.6047], weight: 3, spread: 0.12 },
+  { id: 'FRA-BDX', countryCode: 'FRA', regionId: 'FR-33', name: 'Bordeaux', coordinates: [-0.5792, 44.8378], weight: 3, spread: 0.12 },
+  { id: 'FRA-NCE', countryCode: 'FRA', regionId: 'FR-06', name: 'Nice', coordinates: [7.2620, 43.7102], weight: 3, spread: 0.10 },
+  { id: 'FRA-LIL', countryCode: 'FRA', regionId: 'FR-59', name: 'Lille', coordinates: [3.0573, 50.6292], weight: 3, spread: 0.10 },
+  { id: 'FRA-NTE', countryCode: 'FRA', regionId: 'FR-44', name: 'Nantes', coordinates: [-1.5536, 47.2184], weight: 2, spread: 0.12 },
 
   // ESP
   { id: 'ESP-MAD', countryCode: 'ESP', regionId: 'ES-M', name: 'Madrid', coordinates: [-3.7038, 40.4168], weight: 6, spread: 0.12 },
   { id: 'ESP-BCN', countryCode: 'ESP', regionId: 'ES-B', name: 'Barcelona', coordinates: [2.1734, 41.3851], weight: 6, spread: 0.12 },
-  { id: 'ESP-VLC', countryCode: 'ESP', regionId: 'ES-SE', name: 'Valencia', coordinates: [-0.3763, 39.4699], weight: 4, spread: 0.12 },
+  { id: 'ESP-VLC', countryCode: 'ESP', regionId: 'ES-V', name: 'Valencia', coordinates: [-0.3763, 39.4699], weight: 4, spread: 0.12 },
+  { id: 'ESP-SEV', countryCode: 'ESP', regionId: 'ES-SE', name: 'Sevilla', coordinates: [-5.9845, 37.3891], weight: 4, spread: 0.12 },
+  { id: 'ESP-MAL', countryCode: 'ESP', regionId: 'ES-MA', name: 'Malaga', coordinates: [-4.4214, 36.7213], weight: 3, spread: 0.10 },
+  { id: 'ESP-BIL', countryCode: 'ESP', regionId: 'ES-BI', name: 'Bilbao', coordinates: [-2.9350, 43.2630], weight: 3, spread: 0.10 },
+  { id: 'ESP-ZGZ', countryCode: 'ESP', regionId: 'ES-Z', name: 'Zaragoza', coordinates: [-0.8773, 41.6488], weight: 3, spread: 0.12 },
+  { id: 'ESP-ALI', countryCode: 'ESP', regionId: 'ES-A', name: 'Alicante', coordinates: [-0.4907, 38.3452], weight: 3, spread: 0.10 },
+  { id: 'ESP-GIR', countryCode: 'ESP', regionId: 'ES-GI', name: 'Girona', coordinates: [2.8249, 41.9794], weight: 2, spread: 0.10 },
+  { id: 'ESP-TRG', countryCode: 'ESP', regionId: 'ES-T', name: 'Tarragona', coordinates: [1.2445, 41.1189], weight: 2, spread: 0.10 },
+  { id: 'ESP-MUR', countryCode: 'ESP', regionId: 'ES-MU', name: 'Murcia', coordinates: [-1.1307, 37.9922], weight: 2, spread: 0.10 },
 
   // ITA
   { id: 'ITA-MIL', countryCode: 'ITA', regionId: 'IT-MI', name: 'Milan', coordinates: [9.1900, 45.4642], weight: 6, spread: 0.12 },
   { id: 'ITA-ROM', countryCode: 'ITA', regionId: 'IT-RM', name: 'Rome', coordinates: [12.4964, 41.9028], weight: 6, spread: 0.12 },
   { id: 'ITA-NAP', countryCode: 'ITA', regionId: 'IT-NA', name: 'Naples', coordinates: [14.2681, 40.8518], weight: 4, spread: 0.12 },
+  { id: 'ITA-TUR', countryCode: 'ITA', regionId: 'IT-TO', name: 'Turin', coordinates: [7.6869, 45.0703], weight: 4, spread: 0.12 },
+  { id: 'ITA-FLR', countryCode: 'ITA', regionId: 'IT-FI', name: 'Florence', coordinates: [11.2558, 43.7696], weight: 4, spread: 0.10 },
+  { id: 'ITA-BOL', countryCode: 'ITA', regionId: 'IT-BO', name: 'Bologna', coordinates: [11.3426, 44.4949], weight: 3, spread: 0.10 },
+  { id: 'ITA-VEN', countryCode: 'ITA', regionId: 'IT-VE', name: 'Venice', coordinates: [12.3155, 45.4408], weight: 3, spread: 0.10 },
+  { id: 'ITA-PAL', countryCode: 'ITA', regionId: 'IT-PA', name: 'Palermo', coordinates: [13.3615, 38.1157], weight: 3, spread: 0.12 },
 
   // RUS
   { id: 'RUS-MOW', countryCode: 'RUS', regionId: 'RU-MOW', name: 'Moscow', coordinates: [37.6173, 55.7558], weight: 8, spread: 0.14 },
@@ -429,6 +478,11 @@ export const CAT_CITIES = [
   { id: 'TUR-IST', countryCode: 'TUR', regionId: 'TR-34', name: 'Istanbul', coordinates: [28.9784, 41.0082], weight: 7, spread: 0.14 },
   { id: 'TUR-ANK', countryCode: 'TUR', regionId: 'TR-06', name: 'Ankara', coordinates: [32.8597, 39.9334], weight: 4, spread: 0.14 },
   { id: 'TUR-IZM', countryCode: 'TUR', regionId: 'TR-35', name: 'Izmir', coordinates: [27.1428, 38.4237], weight: 4, spread: 0.14 },
+  { id: 'TUR-ANT', countryCode: 'TUR', regionId: 'TR-07', name: 'Antalya', coordinates: [30.7133, 36.8969], weight: 3, spread: 0.14 },
+  { id: 'TUR-BRS', countryCode: 'TUR', regionId: 'TR-16', name: 'Bursa', coordinates: [29.0610, 40.1885], weight: 3, spread: 0.12 },
+  { id: 'TUR-ADN', countryCode: 'TUR', regionId: 'TR-01', name: 'Adana', coordinates: [35.3213, 36.9914], weight: 3, spread: 0.14 },
+  { id: 'TUR-KON', countryCode: 'TUR', regionId: 'TR-42', name: 'Konya', coordinates: [32.4932, 37.8746], weight: 2, spread: 0.16 },
+  { id: 'TUR-DIY', countryCode: 'TUR', regionId: 'TR-21', name: 'Diyarbakir', coordinates: [40.2370, 37.9144], weight: 2, spread: 0.16 },
 
   // IND
   { id: 'IND-DEL', countryCode: 'IND', regionId: 'IN-DL', name: 'Delhi', coordinates: [77.2090, 28.6139], weight: 8, spread: 0.18 },
@@ -732,9 +786,9 @@ export function generateCountryCatDots(countryCode, catType = 'ALL', maxDots = 5
       const z1 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
       const z2 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
 
-      // 25% of dots use 4x spread for rural/suburban scatter
-      const isRural = rng() < 0.25;
-      const s = isRural ? spread * 4 : spread;
+      // 15% of dots use 1.8x spread for suburban/rural scatter
+      const isRural = rng() < 0.15;
+      const s = isRural ? spread * 1.8 : spread;
 
       const lng = city.coordinates[0] + z1 * s;
       const lat = clamp(city.coordinates[1] + z2 * s * 0.7, -85, 85);
