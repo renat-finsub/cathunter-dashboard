@@ -731,6 +731,7 @@ export function generateCountryCatDots(countryCode, catType = 'ALL', maxDots = 5
         coordinates: [lng, lat],
         isStray,
         cityName: city.name,
+        regionId: city.regionId,
       });
     }
   });
@@ -817,15 +818,14 @@ export function computeKpis(data, prevData) {
   const totalUsers = data.reduce((s, d) => s + safe(d.newUsers), 0);
   const totalCats = data.reduce((s, d) => s + safe(d.newCats), 0);
   const totalShots = data.reduce((s, d) => s + safe(d.shots), 0);
-  const avgDauMau = data.length > 0
-    ? data.reduce((s, d) => s + safe(d.dauMau), 0) / data.length
-    : 0;
+  const lastDauMau = data.length > 0 ? safe(data[data.length - 1].dauMau) : 0;
+  const lastDate = data.length > 0 ? data[data.length - 1].date : null;
 
   const prevUsers = prevData ? prevData.reduce((s, d) => s + safe(d.newUsers), 0) : null;
   const prevCats = prevData ? prevData.reduce((s, d) => s + safe(d.newCats), 0) : null;
   const prevShots = prevData ? prevData.reduce((s, d) => s + safe(d.shots), 0) : null;
   const prevDauMau = prevData && prevData.length > 0
-    ? prevData.reduce((s, d) => s + safe(d.dauMau), 0) / prevData.length
+    ? safe(prevData[prevData.length - 1].dauMau)
     : null;
 
   const pctChange = (curr, prev) =>
@@ -835,7 +835,7 @@ export function computeKpis(data, prevData) {
     users: { value: totalUsers, change: pctChange(totalUsers, prevUsers) },
     cats: { value: totalCats, change: pctChange(totalCats, prevCats) },
     shots: { value: totalShots, change: pctChange(totalShots, prevShots) },
-    dauMau: { value: avgDauMau, change: pctChange(avgDauMau, prevDauMau) },
+    dauMau: { value: lastDauMau, change: pctChange(lastDauMau, prevDauMau), lastDate },
   };
 }
 

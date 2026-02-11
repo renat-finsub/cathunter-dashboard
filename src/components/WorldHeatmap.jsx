@@ -3,6 +3,7 @@ import {
   ComposableMap,
   Geographies,
   Geography,
+  Marker,
 } from 'react-simple-maps';
 import { formatNumber } from '../utils/formatNumber';
 import {
@@ -11,6 +12,7 @@ import {
   CAT_CITIES,
   filterData,
   dailyData,
+  generateCountryCatDots,
 } from '../data/fakeData';
 
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
@@ -68,6 +70,7 @@ export default function WorldHeatmap({ filters, onChange }) {
 
   const [tooltip, setTooltip] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [zoomedCity, setZoomedCity] = useState(null);
 
   const isCountryView = country !== 'ALL';
   const selectedCountry = isCountryView ? COUNTRY_BY_CODE[country] : null;
@@ -118,8 +121,15 @@ export default function WorldHeatmap({ filters, onChange }) {
     [maxVal],
   );
 
-  // Projection config
+  // Projection config — supports world, country, and city zoom
   const projectionConfig = useMemo(() => {
+    if (zoomedCity) {
+      const cityScale = Math.round(8 / (zoomedCity.spread || 0.2)) * 1000;
+      return {
+        scale: cityScale,
+        center: zoomedCity.coordinates,
+      };
+    }
     if (selectedCountry) {
       return {
         scale: COUNTRY_SCALE[selectedCountry.code] || 800,
@@ -127,7 +137,14 @@ export default function WorldHeatmap({ filters, onChange }) {
       };
     }
     return { scale: 135, center: [0, 25] };
-  }, [selectedCountry]);
+  }, [selectedCountry, zoomedCity]);
+
+  // Cat dots for city zoom view
+  const cityDots = useMemo(() => {
+    if (!zoomedCity || !selectedCountry) return [];
+    const allDots = generateCountryCatDots(selectedCountry.code, catType, 500);
+    return allDots.filter((d) => d.regionId === zoomedCity.regionId);
+  }, [zoomedCity, selectedCountry, catType]);
 
   // Region data for country drill-down — distribute country metrics across admin regions
   const regionData = useMemo(() => {
@@ -187,10 +204,37 @@ export default function WorldHeatmap({ filters, onChange }) {
   const handleCountryClick = (code) => {
     onChange?.({ ...filters, country: code });
     setTooltip(null);
+    setZoomedCity(null);
   };
 
   const handleBackToWorld = () => {
     onChange?.({ ...filters, country: 'ALL' });
+    setTooltip(null);
+    setZoomedCity(null);
+  };
+
+  const handleBackToCountry = () => {
+    setZoomedCity(null);
+    setTooltip(null);
+  };
+
+  const handleRegionClick = (isoCode) => {
+    // Find the matching ADMIN_REGIONS entry by isoCode
+    const region = ADMIN_REGIONS.find((r) => r.isoCode === isoCode);
+    if (!region) {
+      handleBackToWorld();
+      return;
+    }
+
+    // Find the main city for this region (highest weight)
+    const regionCities = CAT_CITIES.filter((c) => c.regionId === region.id);
+    if (regionCities.length === 0) {
+      handleBackToWorld();
+      return;
+    }
+
+    const mainCity = regionCities.reduce((best, c) => (c.weight > best.weight ? c : best), regionCities[0]);
+    setZoomedCity(mainCity);
     setTooltip(null);
   };
 
@@ -198,7 +242,27 @@ export default function WorldHeatmap({ filters, onChange }) {
     <div className="bg-white rounded-xl shadow-sm p-5 border border-gray-100 relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        {isCountryView ? (
+        {zoomedCity ? (
+          <nav className="flex items-center gap-1 text-sm">
+            <button
+              onClick={handleBackToWorld}
+              className="text-blue-600 hover:underline cursor-pointer font-medium"
+            >
+              World
+            </button>
+            <span className="text-gray-400">&rsaquo;</span>
+            <button
+              onClick={handleBackToCountry}
+              className="text-blue-600 hover:underline cursor-pointer font-medium"
+            >
+              {selectedCountry?.name || country}
+            </button>
+            <span className="text-gray-400">&rsaquo;</span>
+            <span className="text-gray-700 font-semibold">
+              {zoomedCity.name}
+            </span>
+          </nav>
+        ) : isCountryView ? (
           <nav className="flex items-center gap-1 text-sm">
             <button
               onClick={handleBackToWorld}
@@ -232,14 +296,14 @@ export default function WorldHeatmap({ filters, onChange }) {
                 const isEnabled = alpha3 ? enabledCodes.has(alpha3) : false;
                 const value = isEnabled && info ? info.cats : 0;
                 const isSelected = isCountryView && alpha3 === country;
-                const isClickable = !isCountryView && isEnabled && !!info;
+                const isClickable = !isCountryView && !zoomedCity && isEnabled && !!info;
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     fill={
-                      isCountryView
+                      isCountryView || zoomedCity
                         ? isSelected ? '#eef2ff' : '#f1f5f9'
                         : isEnabled ? getColor(value) : '#f1f5f9'
                     }
@@ -258,12 +322,16 @@ export default function WorldHeatmap({ filters, onChange }) {
                     }}
                     onMouseLeave={() => setTooltip(null)}
                     onClick={() => {
-                      if (isClickable) handleCountryClick(alpha3);
+                      if (zoomedCity) {
+                        handleBackToCountry();
+                      } else if (isClickable) {
+                        handleCountryClick(alpha3);
+                      }
                     }}
                     style={{
                       default: {
                         outline: 'none',
-                        cursor: isClickable ? 'pointer' : 'default',
+                        cursor: isClickable || zoomedCity ? 'pointer' : 'default',
                       },
                       hover: {
                         outline: 'none',
@@ -290,14 +358,14 @@ export default function WorldHeatmap({ filters, onChange }) {
                     key={geo.rsmKey}
                     geography={geo}
                     fill={
-                      isCountryView
+                      isCountryView || zoomedCity
                         ? country === 'RUS' ? '#eef2ff' : '#f1f5f9'
                         : isRusEnabled ? getColor(value) : '#f1f5f9'
                     }
                     stroke={country === 'RUS' ? '#3b82f6' : '#cbd5e1'}
                     strokeWidth={country === 'RUS' ? 1.5 : 0.5}
                     onMouseEnter={() => {
-                      if (!isCountryView && isRusEnabled && rusInfo) {
+                      if (!isCountryView && !zoomedCity && isRusEnabled && rusInfo) {
                         setTooltip({
                           type: 'country',
                           name: 'Russia',
@@ -309,16 +377,20 @@ export default function WorldHeatmap({ filters, onChange }) {
                     }}
                     onMouseLeave={() => setTooltip(null)}
                     onClick={() => {
-                      if (!isCountryView && isRusEnabled && rusInfo) handleCountryClick('RUS');
+                      if (zoomedCity) {
+                        handleBackToCountry();
+                      } else if (!isCountryView && isRusEnabled && rusInfo) {
+                        handleCountryClick('RUS');
+                      }
                     }}
                     style={{
                       default: {
                         outline: 'none',
-                        cursor: !isCountryView && isRusEnabled && rusInfo ? 'pointer' : 'default',
+                        cursor: (!isCountryView && !zoomedCity && isRusEnabled && rusInfo) || zoomedCity ? 'pointer' : 'default',
                       },
                       hover: {
                         outline: 'none',
-                        fill: !isCountryView && isRusEnabled && rusInfo ? '#93c5fd' : undefined,
+                        fill: !isCountryView && !zoomedCity && isRusEnabled && rusInfo ? '#93c5fd' : undefined,
                       },
                       pressed: { outline: 'none' },
                     }}
@@ -328,8 +400,8 @@ export default function WorldHeatmap({ filters, onChange }) {
             }
           </Geographies>
 
-          {/* Admin-1 layer — only shown in country drill-down */}
-          {isCountryView && (
+          {/* Admin-1 layer — only shown in country drill-down (not in city zoom) */}
+          {isCountryView && !zoomedCity && (
             <Geographies geography={ADMIN1_URL}>
               {({ geographies }) => {
                 // Filter to admin-1 features for the selected country
@@ -360,7 +432,7 @@ export default function WorldHeatmap({ filters, onChange }) {
                         })
                       }
                       onMouseLeave={() => setTooltip(null)}
-                      onClick={handleBackToWorld}
+                      onClick={() => handleRegionClick(isoCode)}
                       style={{
                         default: { outline: 'none', cursor: 'pointer' },
                         hover: {
@@ -375,6 +447,26 @@ export default function WorldHeatmap({ filters, onChange }) {
               }}
             </Geographies>
           )}
+
+          {/* City zoom — cat dot markers */}
+          {zoomedCity && cityDots.map((dot) => (
+            <Marker key={dot.id} coordinates={dot.coordinates}>
+              <circle
+                r={2}
+                fill={dot.isStray ? '#f97316' : '#3b82f6'}
+                opacity={0.7}
+                onMouseEnter={() =>
+                  setTooltip({
+                    type: 'dot',
+                    name: dot.cityName,
+                    catType: dot.isStray ? 'Stray' : 'Home',
+                  })
+                }
+                onMouseLeave={() => setTooltip(null)}
+                style={{ cursor: 'pointer' }}
+              />
+            </Marker>
+          ))}
         </ComposableMap>
 
         {/* Tooltip */}
@@ -383,31 +475,63 @@ export default function WorldHeatmap({ filters, onChange }) {
             className="absolute bg-gray-900 text-white text-xs px-2.5 py-1.5 rounded shadow-lg pointer-events-none z-10 whitespace-nowrap"
             style={{ left: mousePos.x + 12, top: mousePos.y - 10 }}
           >
-            <span className="font-semibold">{tooltip.name}</span>
-            <span className="text-gray-400 mx-1">|</span>
-            Users {formatNumber(tooltip.users)}
-            <span className="text-gray-400 mx-1">&middot;</span>
-            Cats {formatNumber(tooltip.cats)}
-            <span className="text-gray-400 mx-1">&middot;</span>
-            Shots {formatNumber(tooltip.shots)}
+            {tooltip.type === 'dot' ? (
+              <>
+                <span className="font-semibold">{tooltip.name}</span>
+                <span className="text-gray-400 mx-1">|</span>
+                <span
+                  className="inline-block w-2 h-2 rounded-full mr-1"
+                  style={{ backgroundColor: tooltip.catType === 'Stray' ? '#f97316' : '#3b82f6' }}
+                />
+                {tooltip.catType}
+              </>
+            ) : (
+              <>
+                <span className="font-semibold">{tooltip.name}</span>
+                <span className="text-gray-400 mx-1">|</span>
+                Users {formatNumber(tooltip.users)}
+                <span className="text-gray-400 mx-1">&middot;</span>
+                Cats {formatNumber(tooltip.cats)}
+                <span className="text-gray-400 mx-1">&middot;</span>
+                Shots {formatNumber(tooltip.shots)}
+              </>
+            )}
           </div>
         )}
       </div>
 
       {/* Legend */}
-      <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
-        <span>Low</span>
-        <div
-          className="h-2 flex-1 rounded"
-          style={{ background: 'linear-gradient(to right, #f1f5f9, #1e40af)' }}
-        />
-        <span>High</span>
-      </div>
+      {zoomedCity ? (
+        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+          <span className="flex items-center gap-1">
+            <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#f97316' }} />
+            Stray
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#3b82f6' }} />
+            Home
+          </span>
+          <span className="text-gray-400 ml-auto">
+            {cityDots.length} cats
+          </span>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2 mt-2 text-xs text-gray-500">
+          <span>Low</span>
+          <div
+            className="h-2 flex-1 rounded"
+            style={{ background: 'linear-gradient(to right, #f1f5f9, #1e40af)' }}
+          />
+          <span>High</span>
+        </div>
+      )}
 
       <div className="mt-1 text-[11px] text-gray-400">
-        {!isCountryView
-          ? 'Click a country to explore.'
-          : 'Click a region to go back.'}
+        {zoomedCity
+          ? `Click anywhere to go back to ${selectedCountry?.name || 'country'}.`
+          : !isCountryView
+            ? 'Click a country to explore.'
+            : 'Click a region to zoom into a city.'}
       </div>
     </div>
   );

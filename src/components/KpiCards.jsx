@@ -39,6 +39,11 @@ export default function KpiCards({ kpis }) {
                 </span>
               )}
             </div>
+            {isDauMau && data.lastDate && (
+              <div className="text-[11px] text-gray-400 mt-1">
+                As of {data.lastDate} (trailing 30d)
+              </div>
+            )}
           </div>
         );
       })}
