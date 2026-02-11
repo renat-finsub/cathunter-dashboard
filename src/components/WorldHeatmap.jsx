@@ -292,6 +292,8 @@ export default function WorldHeatmap({ filters, onChange }) {
         <ComposableMap
           projection="geoMercator"
           projectionConfig={projectionConfig}
+          width={800}
+          height={380}
           style={{ width: '100%', height: 'auto' }}
         >
           {/* Base country layer */}
