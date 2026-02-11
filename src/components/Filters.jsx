@@ -2,6 +2,18 @@ import { COUNTRIES, CONTINENTS } from '../data/fakeData';
 
 const PERIODS = ['D', 'W', 'M', 'Y', 'ALL'];
 
+const COUNTRY_FLAGS = {
+  USA: '\u{1F1FA}\u{1F1F8}', CAN: '\u{1F1E8}\u{1F1E6}', MEX: '\u{1F1F2}\u{1F1FD}',
+  BRA: '\u{1F1E7}\u{1F1F7}', ARG: '\u{1F1E6}\u{1F1F7}', CHL: '\u{1F1E8}\u{1F1F1}',
+  COL: '\u{1F1E8}\u{1F1F4}', GBR: '\u{1F1EC}\u{1F1E7}', DEU: '\u{1F1E9}\u{1F1EA}',
+  FRA: '\u{1F1EB}\u{1F1F7}', ESP: '\u{1F1EA}\u{1F1F8}', ITA: '\u{1F1EE}\u{1F1F9}',
+  RUS: '\u{1F1F7}\u{1F1FA}', TUR: '\u{1F1F9}\u{1F1F7}', IND: '\u{1F1EE}\u{1F1F3}',
+  CHN: '\u{1F1E8}\u{1F1F3}', JPN: '\u{1F1EF}\u{1F1F5}', KOR: '\u{1F1F0}\u{1F1F7}',
+  IDN: '\u{1F1EE}\u{1F1E9}', THA: '\u{1F1F9}\u{1F1ED}', PHL: '\u{1F1F5}\u{1F1ED}',
+  NGA: '\u{1F1F3}\u{1F1EC}', ZAF: '\u{1F1FF}\u{1F1E6}', EGY: '\u{1F1EA}\u{1F1EC}',
+  AUS: '\u{1F1E6}\u{1F1FA}',
+};
+
 const CONTINENT_OPTIONS = [
   { value: 'ALL', label: 'All' },
   { value: 'North America', label: 'N. America' },
@@ -83,7 +95,7 @@ export default function Filters({ filters, onChange }) {
         >
           <option value="ALL">All Countries</option>
           {visibleCountries.map((c) => (
-            <option key={c.code} value={c.code}>{c.name}</option>
+            <option key={c.code} value={c.code}>{COUNTRY_FLAGS[c.code] || ''} {c.name}</option>
           ))}
         </select>
       </div>

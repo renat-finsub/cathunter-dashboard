@@ -121,11 +121,11 @@ export default function WorldHeatmap({ filters, onChange }) {
     [maxVal],
   );
 
-  // Cities within the zoomed region
-  const regionCities = useMemo(() => {
-    if (!zoomedRegion) return [];
-    return CAT_CITIES.filter((c) => c.regionId === zoomedRegion.id);
-  }, [zoomedRegion]);
+  // All cities for the country (context labels when zoomed)
+  const countryCities = useMemo(() => {
+    if (!zoomedRegion || !selectedCountry) return [];
+    return CAT_CITIES.filter((c) => c.countryCode === selectedCountry.code);
+  }, [zoomedRegion, selectedCountry]);
 
   // Projection config — supports world, country, and region zoom
   const projectionConfig = useMemo(() => {
@@ -146,12 +146,14 @@ export default function WorldHeatmap({ filters, onChange }) {
     return { scale: 135, center: [0, 25] };
   }, [selectedCountry, zoomedRegion]);
 
-  // Cat dots for region zoom view
+  // Cat dots for region zoom view — count scales with period
   const regionDots = useMemo(() => {
     if (!zoomedRegion || !selectedCountry) return [];
-    const allDots = generateCountryCatDots(selectedCountry.code, catType, 500);
+    const periodMax = { D: 80, W: 150, M: 300, Y: 450, ALL: 500 };
+    const maxDots = periodMax[period] || 500;
+    const allDots = generateCountryCatDots(selectedCountry.code, catType, maxDots);
     return allDots.filter((d) => d.regionId === zoomedRegion.id);
-  }, [zoomedRegion, selectedCountry, catType]);
+  }, [zoomedRegion, selectedCountry, catType, period]);
 
   // Region data for country drill-down — distribute country metrics across admin regions
   const regionData = useMemo(() => {
@@ -303,15 +305,15 @@ export default function WorldHeatmap({ filters, onChange }) {
                 const isSelected = isCountryView && alpha3 === country;
                 const isClickable = !isCountryView && !zoomedRegion && isEnabled && !!info;
 
+                const baseFill = isCountryView || zoomedRegion
+                  ? (isSelected ? '#eef2ff' : '#f1f5f9')
+                  : (isEnabled ? getColor(value) : '#f1f5f9');
+
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill={
-                      isCountryView || zoomedRegion
-                        ? isSelected ? '#eef2ff' : '#f1f5f9'
-                        : isEnabled ? getColor(value) : '#f1f5f9'
-                    }
+                    fill={baseFill}
                     stroke={isSelected ? '#3b82f6' : '#cbd5e1'}
                     strokeWidth={isSelected ? 1.5 : 0.5}
                     onMouseEnter={() => {
@@ -340,7 +342,7 @@ export default function WorldHeatmap({ filters, onChange }) {
                       },
                       hover: {
                         outline: 'none',
-                        fill: isClickable ? '#93c5fd' : undefined,
+                        fill: isClickable ? '#93c5fd' : baseFill,
                       },
                       pressed: { outline: 'none' },
                     }}
@@ -357,20 +359,21 @@ export default function WorldHeatmap({ filters, onChange }) {
                 const rusInfo = countryAgg['RUS'];
                 const isRusEnabled = enabledCodes.has('RUS');
                 const value = isRusEnabled && rusInfo ? rusInfo.cats : 0;
+                const isRusClickable = !isCountryView && !zoomedRegion && isRusEnabled && !!rusInfo;
+
+                const crimeaFill = isCountryView || zoomedRegion
+                  ? (country === 'RUS' ? '#eef2ff' : '#f1f5f9')
+                  : (isRusEnabled ? getColor(value) : '#f1f5f9');
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
-                    fill={
-                      isCountryView || zoomedRegion
-                        ? country === 'RUS' ? '#eef2ff' : '#f1f5f9'
-                        : isRusEnabled ? getColor(value) : '#f1f5f9'
-                    }
+                    fill={crimeaFill}
                     stroke={country === 'RUS' ? '#3b82f6' : '#cbd5e1'}
                     strokeWidth={country === 'RUS' ? 1.5 : 0.5}
                     onMouseEnter={() => {
-                      if (!isCountryView && !zoomedRegion && isRusEnabled && rusInfo) {
+                      if (isRusClickable) {
                         setTooltip({
                           type: 'country',
                           name: 'Russia',
@@ -384,18 +387,18 @@ export default function WorldHeatmap({ filters, onChange }) {
                     onClick={() => {
                       if (zoomedRegion) {
                         handleBackToCountry();
-                      } else if (!isCountryView && isRusEnabled && rusInfo) {
+                      } else if (isRusClickable) {
                         handleCountryClick('RUS');
                       }
                     }}
                     style={{
                       default: {
                         outline: 'none',
-                        cursor: (!isCountryView && !zoomedRegion && isRusEnabled && rusInfo) || zoomedRegion ? 'pointer' : 'default',
+                        cursor: isRusClickable || zoomedRegion ? 'pointer' : 'default',
                       },
                       hover: {
                         outline: 'none',
-                        fill: !isCountryView && !zoomedRegion && isRusEnabled && rusInfo ? '#93c5fd' : undefined,
+                        fill: isRusClickable ? '#93c5fd' : crimeaFill,
                       },
                       pressed: { outline: 'none' },
                     }}
@@ -475,9 +478,9 @@ export default function WorldHeatmap({ filters, onChange }) {
           {zoomedRegion && regionDots.map((dot) => (
             <Marker key={dot.id} coordinates={dot.coordinates}>
               <circle
-                r={2.5}
+                r={1.5}
                 fill={dot.isStray ? '#f97316' : '#3b82f6'}
-                opacity={0.7}
+                opacity={0.65}
                 onMouseEnter={() =>
                   setTooltip({
                     type: 'dot',
@@ -491,27 +494,30 @@ export default function WorldHeatmap({ filters, onChange }) {
             </Marker>
           ))}
 
-          {/* Region zoom — city name labels */}
-          {zoomedRegion && regionCities.map((city) => (
-            <Marker key={city.id} coordinates={city.coordinates}>
-              <text
-                textAnchor="middle"
-                y={-8}
-                style={{
-                  fontFamily: 'system-ui, sans-serif',
-                  fontSize: 10,
-                  fontWeight: 600,
-                  fill: '#1e293b',
-                  stroke: '#fff',
-                  strokeWidth: 3,
-                  paintOrder: 'stroke',
-                  pointerEvents: 'none',
-                }}
-              >
-                {city.name}
-              </text>
-            </Marker>
-          ))}
+          {/* Region zoom — city name labels (all country cities for context) */}
+          {zoomedRegion && countryCities.map((city) => {
+            const isInRegion = city.regionId === zoomedRegion.id;
+            return (
+              <Marker key={city.id} coordinates={city.coordinates}>
+                <text
+                  textAnchor="middle"
+                  y={-6}
+                  style={{
+                    fontFamily: 'system-ui, sans-serif',
+                    fontSize: isInRegion ? 11 : 8,
+                    fontWeight: isInRegion ? 700 : 400,
+                    fill: isInRegion ? '#1e293b' : '#94a3b8',
+                    stroke: '#fff',
+                    strokeWidth: isInRegion ? 3 : 2,
+                    paintOrder: 'stroke',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {city.name}
+                </text>
+              </Marker>
+            );
+          })}
         </ComposableMap>
 
         {/* Tooltip */}

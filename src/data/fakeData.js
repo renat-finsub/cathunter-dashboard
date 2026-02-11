@@ -269,10 +269,17 @@ export const ADMIN_REGIONS = [
   { id: 'IT-NA', countryCode: 'ITA', name: 'Napoli', isoCode: 'IT-NA', center: [14.3, 40.9], weight: 5 },
 
   // RUS — federal subjects
-  { id: 'RU-MOW', countryCode: 'RUS', name: 'Moscow', isoCode: 'RU-MOW', center: [37.6, 55.8], weight: 10 },
+  { id: 'RU-MOW', countryCode: 'RUS', name: 'Moscow', isoCode: 'RU-MOS', center: [37.6, 55.8], weight: 10 },
   { id: 'RU-SPE', countryCode: 'RUS', name: 'Saint Petersburg', isoCode: 'RU-SPE', center: [30.3, 59.9], weight: 6 },
   { id: 'RU-KDA', countryCode: 'RUS', name: 'Krasnodar Krai', isoCode: 'RU-KDA', center: [39.7, 45.3], weight: 4 },
   { id: 'RU-NVS', countryCode: 'RUS', name: 'Novosibirsk Oblast', isoCode: 'RU-NVS', center: [78.0, 55.0], weight: 3 },
+
+  { id: 'RU-SVE', countryCode: 'RUS', name: 'Sverdlovsk Oblast', isoCode: 'RU-SVE', center: [60.6, 56.8], weight: 3 },
+  { id: 'RU-TA', countryCode: 'RUS', name: 'Tatarstan', isoCode: 'RU-TA', center: [49.1, 55.8], weight: 3 },
+  { id: 'RU-OMS', countryCode: 'RUS', name: 'Omsk Oblast', isoCode: 'RU-OMS', center: [73.4, 56.0], weight: 2 },
+  { id: 'RU-KYA', countryCode: 'RUS', name: 'Krasnoyarsk Krai', isoCode: 'RU-KYA', center: [93.0, 56.0], weight: 2 },
+  { id: 'RU-SAM', countryCode: 'RUS', name: 'Samara Oblast', isoCode: 'RU-SAM', center: [50.2, 53.2], weight: 2 },
+  { id: 'RU-CHE', countryCode: 'RUS', name: 'Chelyabinsk Oblast', isoCode: 'RU-CHE', center: [59.9, 54.7], weight: 2 },
 
   // RUS — Crimea & Sevastopol
   { id: 'RU-CR', countryCode: 'RUS', name: 'Crimea', isoCode: 'UA-43', center: [34.1, 44.9], weight: 3 },
@@ -410,6 +417,13 @@ export const CAT_CITIES = [
   { id: 'RUS-NVS', countryCode: 'RUS', regionId: 'RU-NVS', name: 'Novosibirsk', coordinates: [82.9204, 55.0302], weight: 4, spread: 0.18 },
   { id: 'RUS-SIM', countryCode: 'RUS', regionId: 'RU-CR', name: 'Simferopol', coordinates: [34.1, 44.95], weight: 3, spread: 0.14 },
   { id: 'RUS-SEV', countryCode: 'RUS', regionId: 'RU-SEV', name: 'Sevastopol', coordinates: [33.52, 44.62], weight: 2, spread: 0.10 },
+
+  { id: 'RUS-EKB', countryCode: 'RUS', regionId: 'RU-SVE', name: 'Yekaterinburg', coordinates: [60.6122, 56.8519], weight: 4, spread: 0.16 },
+  { id: 'RUS-KZN', countryCode: 'RUS', regionId: 'RU-TA', name: 'Kazan', coordinates: [49.1221, 55.7887], weight: 4, spread: 0.14 },
+  { id: 'RUS-OMS', countryCode: 'RUS', regionId: 'RU-OMS', name: 'Omsk', coordinates: [73.3686, 54.9885], weight: 3, spread: 0.16 },
+  { id: 'RUS-KJA', countryCode: 'RUS', regionId: 'RU-KYA', name: 'Krasnoyarsk', coordinates: [92.8719, 56.0153], weight: 3, spread: 0.16 },
+  { id: 'RUS-SAM', countryCode: 'RUS', regionId: 'RU-SAM', name: 'Samara', coordinates: [50.1500, 53.1959], weight: 3, spread: 0.14 },
+  { id: 'RUS-CHE', countryCode: 'RUS', regionId: 'RU-CHE', name: 'Chelyabinsk', coordinates: [61.4025, 55.1644], weight: 3, spread: 0.16 },
 
   // TUR
   { id: 'TUR-IST', countryCode: 'TUR', regionId: 'TR-34', name: 'Istanbul', coordinates: [28.9784, 41.0082], weight: 7, spread: 0.14 },
@@ -718,8 +732,12 @@ export function generateCountryCatDots(countryCode, catType = 'ALL', maxDots = 5
       const z1 = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
       const z2 = Math.sqrt(-2 * Math.log(u1)) * Math.sin(2 * Math.PI * u2);
 
-      const lng = city.coordinates[0] + z1 * spread;
-      const lat = clamp(city.coordinates[1] + z2 * spread * 0.7, -85, 85);
+      // 25% of dots use 4x spread for rural/suburban scatter
+      const isRural = rng() < 0.25;
+      const s = isRural ? spread * 4 : spread;
+
+      const lng = city.coordinates[0] + z1 * s;
+      const lat = clamp(city.coordinates[1] + z2 * s * 0.7, -85, 85);
 
       const isStray = rng() < strayShare;
 

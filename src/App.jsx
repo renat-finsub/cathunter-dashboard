@@ -109,15 +109,6 @@ function App() {
               CatHunter Dashboard
             </h1>
             </div>
-          <a
-            href="https://cathunter-dashboard.vercel.app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            <svg width="14" height="14" viewBox="0 0 76 65" fill="currentColor"><path d="M37.5274 0L75.0548 65H0L37.5274 0Z"/></svg>
-            Preview
-          </a>
         </div>
 
         {/* Key Insights */}
