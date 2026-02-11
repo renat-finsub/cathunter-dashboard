@@ -604,20 +604,35 @@ function generateCountryDailyData() {
     });
   }
 
-  // Post-process: compute DAU/MAU from actual shots & cumulative user base
-  // DAU  = shots / avgShotsPerActiveUser  (shots proxy for daily activity)
-  // MAU  = exponentially-decaying running sum of newUsers (reachable user pool)
-  // decay ≈ exp(-0.04) per day → D7 ~75%, D30 ~30%, D90 ~3%
+  // Post-process: compute DAU/MAU
+  //   DAU  = active users today (shots / avgShotsPerActiveUser)
+  //   MAU  = unique active users over trailing 30 days
+  //   DAU/MAU = DAU_today / MAU_30d
+  //
+  // "reachable" = exponentially-decaying sum of newUsers (installed base)
+  // decay exp(-0.04): D7 ~75%, D30 ~30%, D90 ~3%
+  // daily active probability p = DAU / reachable
+  // MAU = reachable × P(active ≥1 time in 30 days) = reachable × (1 - (1-p)^30)
   const DAILY_DECAY = Math.exp(-0.04);
+  const P_SMOOTH = 0.12; // EMA smoothing for daily active rate
 
   COUNTRIES.forEach((c) => {
     const days = out[c.code];
     const avgShotsPerActiveUser = Math.max(1, c.shotsPerCat * c.catsPerUser * 0.5);
 
-    let mau = 0;
+    let reachable = 0;
+    let pSmoothed = 0;
+
     for (let i = 0; i < days.length; i++) {
-      mau = mau * DAILY_DECAY + days[i].newUsers;
-      const dau = days[i].shots / avgShotsPerActiveUser;
+      reachable = reachable * DAILY_DECAY + days[i].newUsers;
+
+      const dau = Math.min(days[i].shots / avgShotsPerActiveUser, reachable);
+      const p = reachable > 0 ? dau / reachable : 0;
+      pSmoothed = pSmoothed * (1 - P_SMOOTH) + p * P_SMOOTH;
+
+      const pClamped = Math.min(pSmoothed, 0.99);
+      const mau = reachable * (1 - Math.pow(1 - pClamped, 30));
+
       days[i].dauMau = mau > 0 ? clamp(dau / mau, 0.02, 0.55) : 0;
     }
   });
