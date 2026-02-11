@@ -3320,14 +3320,18 @@ COUNTRIES.forEach((c) => {
 // --- Aggregate KPIs ---
 export function computeKpis(data, prevData) {
   const safe = (v) => (Number.isFinite(v) ? v : 0);
-  const lastMau = data.length > 0 ? safe(data[data.length - 1].mau) : 0;
+
+  // Active Users = average MAU over the period (changes with period selection)
+  const avgMau = data.length > 0
+    ? Math.round(data.reduce((s, d) => s + safe(d.mau), 0) / data.length)
+    : 0;
   const totalCats = data.reduce((s, d) => s + safe(d.newCats), 0);
   const totalShots = data.reduce((s, d) => s + safe(d.shots), 0);
   const lastDauMau = data.length > 0 ? safe(data[data.length - 1].dauMau) : 0;
   const lastDate = data.length > 0 ? data[data.length - 1].date : null;
 
-  const prevMau = prevData && prevData.length > 0
-    ? safe(prevData[prevData.length - 1].mau)
+  const prevAvgMau = prevData && prevData.length > 0
+    ? Math.round(prevData.reduce((s, d) => s + safe(d.mau), 0) / prevData.length)
     : null;
   const prevCats = prevData ? prevData.reduce((s, d) => s + safe(d.newCats), 0) : null;
   const prevShots = prevData ? prevData.reduce((s, d) => s + safe(d.shots), 0) : null;
@@ -3339,7 +3343,7 @@ export function computeKpis(data, prevData) {
     prev && prev > 0 ? ((curr - prev) / prev) * 100 : null;
 
   return {
-    users: { value: lastMau, change: pctChange(lastMau, prevMau) },
+    users: { value: avgMau, change: pctChange(avgMau, prevAvgMau) },
     cats: { value: totalCats, change: pctChange(totalCats, prevCats) },
     shots: { value: totalShots, change: pctChange(totalShots, prevShots) },
     dauMau: { value: lastDauMau, change: pctChange(lastDauMau, prevDauMau), lastDate },
