@@ -6,6 +6,7 @@ import AgeSexChart from './components/AgeSexChart';
 import DauMauChart from './components/DauMauChart';
 import WorldHeatmap from './components/WorldHeatmap';
 import EngagementChart from './components/EngagementChart';
+import InsightsBlock from './components/InsightsBlock';
 import {
   dailyData,
   filterData,
@@ -130,6 +131,9 @@ function App() {
           <AgeSexChart data={ageData} />
           <EngagementChart data={chartData} />
         </div>
+
+        {/* Insights */}
+        <InsightsBlock data={filtered} />
 
         {/* World Heatmap */}
         <WorldHeatmap filters={filters} onChange={setFilters} />
