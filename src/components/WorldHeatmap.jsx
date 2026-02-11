@@ -59,6 +59,40 @@ function sum(arr, key) {
   return arr.reduce((s, d) => s + (d[key] || 0), 0);
 }
 
+// Compute scale & center from a GeoJSON feature so the region fits in viewport
+function computeRegionZoom(geo, viewWidth, viewHeight) {
+  const coords = [];
+  function extract(c) {
+    if (typeof c[0] === 'number') coords.push(c);
+    else c.forEach(extract);
+  }
+  if (geo?.geometry?.coordinates) extract(geo.geometry.coordinates);
+  if (coords.length === 0) return null;
+
+  let minLon = Infinity, maxLon = -Infinity;
+  let minLat = Infinity, maxLat = -Infinity;
+  for (const [lon, lat] of coords) {
+    minLon = Math.min(minLon, lon);
+    maxLon = Math.max(maxLon, lon);
+    minLat = Math.min(minLat, lat);
+    maxLat = Math.max(maxLat, lat);
+  }
+
+  const toRad = Math.PI / 180;
+  const mercY = (lat) => Math.log(Math.tan(Math.PI / 4 + (lat * toRad) / 2));
+  const lonRange = (maxLon - minLon) * toRad;
+  const latRange = Math.abs(mercY(maxLat) - mercY(minLat));
+
+  const padding = 0.65;
+  const scaleX = lonRange > 0 ? (viewWidth * padding) / lonRange : 50000;
+  const scaleY = latRange > 0 ? (viewHeight * padding) / latRange : 50000;
+
+  return {
+    scale: Math.min(scaleX, scaleY, 50000),
+    center: [(minLon + maxLon) / 2, (minLat + maxLat) / 2],
+  };
+}
+
 export default function WorldHeatmap({ filters, onChange }) {
   const {
     period = 'ALL',
@@ -130,11 +164,9 @@ export default function WorldHeatmap({ filters, onChange }) {
   // Projection config — supports world, country, and region zoom
   const projectionConfig = useMemo(() => {
     if (zoomedRegion && selectedCountry) {
-      const baseScale = COUNTRY_SCALE[selectedCountry.code] || 800;
-      const regionScale = Math.min(Math.max(baseScale * 3, 3000), 15000);
       return {
-        scale: regionScale,
-        center: zoomedRegion.center,
+        scale: zoomedRegion.zoom?.scale || 5000,
+        center: zoomedRegion.zoom?.center || zoomedRegion.center,
       };
     }
     if (selectedCountry) {
@@ -227,7 +259,7 @@ export default function WorldHeatmap({ filters, onChange }) {
     setTooltip(null);
   };
 
-  const handleRegionClick = (isoCode) => {
+  const handleRegionClick = (isoCode, geo) => {
     const region = ADMIN_REGIONS.find((r) => r.isoCode === isoCode);
     if (!region) {
       handleBackToWorld();
@@ -241,7 +273,8 @@ export default function WorldHeatmap({ filters, onChange }) {
       return;
     }
 
-    setZoomedRegion(region);
+    const zoom = geo ? computeRegionZoom(geo, 800, 450) : null;
+    setZoomedRegion({ ...region, zoom });
     setTooltip(null);
   };
 
@@ -456,7 +489,7 @@ export default function WorldHeatmap({ filters, onChange }) {
                         if (zoomedRegion) {
                           handleBackToCountry();
                         } else {
-                          handleRegionClick(isoCode);
+                          handleRegionClick(isoCode, geo);
                         }
                       }}
                       style={{
