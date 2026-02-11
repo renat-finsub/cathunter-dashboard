@@ -3076,6 +3076,7 @@ function generateCountryDailyData() {
         newCats: cats,
         newCatsStray: catsStray,
         newCatsHome: catsHome,
+        catsShot: 0,
         shots,
         dauMau: 0,
         dau: 0,
@@ -3119,6 +3120,20 @@ function generateCountryDailyData() {
     }
   });
 
+  // Post-process: compute catsShot = newCats + returning cats from known pool
+  const DAILY_REENCOUNTER = 0.006; // ~0.6% of known cats are re-seen each day
+
+  COUNTRIES.forEach((c) => {
+    const days = out[c.code];
+    let knownCats = 0;
+
+    for (let i = 0; i < days.length; i++) {
+      const returning = Math.round(knownCats * DAILY_REENCOUNTER * clamp(randNormal(1.0, 0.2), 0.5, 1.5));
+      days[i].catsShot = days[i].newCats + returning;
+      knownCats += days[i].newCats;
+    }
+  });
+
   return out;
 }
 
@@ -3134,6 +3149,7 @@ function generateDailyFromCountries() {
     const newCats = sumBy(days, (d) => d.newCats);
     const newCatsStray = sumBy(days, (d) => d.newCatsStray);
     const newCatsHome = sumBy(days, (d) => d.newCatsHome);
+    const catsShot = sumBy(days, (d) => d.catsShot);
     const shots = sumBy(days, (d) => d.shots);
     const dauMau = averageBy(days, (d) => d.dauMau, (d) => d.newUsers);
     const dau = sumBy(days, (d) => d.dau);
@@ -3147,6 +3163,7 @@ function generateDailyFromCountries() {
       newCats,
       newCatsStray,
       newCatsHome,
+      catsShot,
       shots,
       dauMau,
       dau,
@@ -3307,13 +3324,13 @@ export function computeKpis(data, prevData) {
   const safe = (v) => (Number.isFinite(v) ? v : 0);
 
   const totalUsers = data.reduce((s, d) => s + safe(d.newUsers), 0);
-  const totalCats = data.reduce((s, d) => s + safe(d.newCats), 0);
+  const totalCats = data.reduce((s, d) => s + safe(d.catsShot || d.newCats), 0);
   const totalShots = data.reduce((s, d) => s + safe(d.shots), 0);
   const lastDauMau = data.length > 0 ? safe(data[data.length - 1].dauMau) : 0;
   const lastDate = data.length > 0 ? data[data.length - 1].date : null;
 
   const prevUsers = prevData ? prevData.reduce((s, d) => s + safe(d.newUsers), 0) : null;
-  const prevCats = prevData ? prevData.reduce((s, d) => s + safe(d.newCats), 0) : null;
+  const prevCats = prevData ? prevData.reduce((s, d) => s + safe(d.catsShot || d.newCats), 0) : null;
   const prevShots = prevData ? prevData.reduce((s, d) => s + safe(d.shots), 0) : null;
   const prevDauMau = prevData && prevData.length > 0
     ? safe(prevData[prevData.length - 1].dauMau)
@@ -3351,6 +3368,7 @@ function aggregateContinentData(continent) {
       newCats: 0,
       newCatsStray: 0,
       newCatsHome: 0,
+      catsShot: 0,
       shots: 0,
       dauMau: 0,
       dau: 0,
@@ -3369,6 +3387,7 @@ function aggregateContinentData(continent) {
       base.newCats += d.newCats;
       base.newCatsStray += d.newCatsStray;
       base.newCatsHome += d.newCatsHome;
+      base.catsShot += d.catsShot || 0;
       base.shots += d.shots;
       base.dau += d.dau || 0;
       base.mau += d.mau || 0;
@@ -3409,6 +3428,7 @@ function applyPlatform(d, platform) {
       newCats: 0,
       newCatsStray: 0,
       newCatsHome: 0,
+      catsShot: 0,
       shots: 0,
       dauMau: 0,
       dau: 0,
@@ -3447,6 +3467,7 @@ function applyPlatform(d, platform) {
     newCats,
     newCatsStray: Math.max(0, newCatsStray),
     newCatsHome: Math.max(0, newCatsHome),
+    catsShot: Math.round((d.catsShot || 0) * userRatio),
     shots: scaledShots,
     dauMau: clamp(dauMau, 0.01, 0.60),
     dau: Math.round((d.dau || 0) * userRatio),
@@ -3472,6 +3493,7 @@ function applyCatType(d, catType) {
       newCats: 0,
       newCatsStray: 0,
       newCatsHome: 0,
+      catsShot: 0,
       shots: 0,
       dauMau: 0,
       dau: 0,
@@ -3528,6 +3550,7 @@ function applyCatType(d, catType) {
     newCats: selectedCats,
     newCatsStray: catType === 'Stray' ? selectedCats : 0,
     newCatsHome: catType === 'Home' ? selectedCats : 0,
+    catsShot: Math.round((d.catsShot || 0) * ratio),
     shots: scaledShots,
     dauMau: clamp(dauMau, 0.01, 0.60),
     dau: Math.round((d.dau || 0) * ratio),
