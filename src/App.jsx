@@ -22,7 +22,7 @@ import {
 
 function App() {
   const [filters, setFilters] = useState({
-    period: 'ALL',
+    period: 'Y',
     continent: 'ALL',
     country: 'ALL',
     platform: 'ALL',
