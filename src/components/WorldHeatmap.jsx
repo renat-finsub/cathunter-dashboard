@@ -384,17 +384,21 @@ export default function WorldHeatmap({ filters, onChange }) {
                 const isSelected = isCountryView && alpha3 === country;
                 const isClickable = !isCountryView && !zoomedRegion && isEnabled && !!info;
 
-                const baseFill = isCountryView || zoomedRegion
-                  ? (isSelected ? '#eef2ff' : '#f1f5f9')
-                  : (isEnabled ? getColor(value) : '#f1f5f9');
+                // Selected country: transparent base fill — admin-1 layer covers land,
+                // prevents simplified 110m polygon from painting over ocean
+                const baseFill = isSelected
+                  ? 'transparent'
+                  : isCountryView || zoomedRegion
+                    ? '#f1f5f9'
+                    : (isEnabled ? getColor(value) : '#f1f5f9');
 
                 return (
                   <Geography
                     key={geo.rsmKey}
                     geography={geo}
                     fill={baseFill}
-                    stroke={isSelected ? '#3b82f6' : '#cbd5e1'}
-                    strokeWidth={isSelected ? 1.5 : 0.5}
+                    stroke={isSelected ? 'none' : '#cbd5e1'}
+                    strokeWidth={isSelected ? 0 : 0.5}
                     onMouseEnter={() => {
                       if (isClickable) {
                         setTooltip({
@@ -418,7 +422,7 @@ export default function WorldHeatmap({ filters, onChange }) {
                       default: {
                         outline: 'none',
                         cursor: isClickable ? 'pointer' : 'default',
-                        pointerEvents: isCountryView && !isSelected ? 'none' : 'auto',
+                        pointerEvents: isCountryView && !zoomedRegion ? 'none' : 'auto',
                       },
                       hover: {
                         outline: 'none',
