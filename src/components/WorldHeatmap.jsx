@@ -109,7 +109,7 @@ function computeRegionZoom(geo, viewWidth, viewHeight) {
   const lonRange = (maxLon - minLon) * toRad;
   const latRange = Math.abs(mercY(maxLat) - mercY(minLat));
 
-  const padding = 0.65;
+  const padding = 0.85;
   const scaleX = lonRange > 0 ? (viewWidth * padding) / lonRange : 50000;
   const scaleY = latRange > 0 ? (viewHeight * padding) / latRange : 50000;
 
@@ -191,10 +191,10 @@ export default function WorldHeatmap({ filters, onChange }) {
     [maxVal],
   );
 
-  // All cities for the country (context labels when zoomed)
-  const countryCities = useMemo(() => {
+  // Cities for the zoomed region only (labels on region zoom view)
+  const regionCities = useMemo(() => {
     if (!zoomedRegion || !selectedCountry) return [];
-    return CAT_CITIES.filter((c) => c.countryCode === selectedCountry.code);
+    return CAT_CITIES.filter((c) => c.countryCode === selectedCountry.code && c.regionId === zoomedRegion.id);
   }, [zoomedRegion, selectedCountry]);
 
   // Projection config — supports world, country, and region zoom
@@ -565,30 +565,27 @@ export default function WorldHeatmap({ filters, onChange }) {
             </Marker>
           ))}
 
-          {/* Region zoom — city name labels (all country cities for context) */}
-          {zoomedRegion && countryCities.map((city) => {
-            const isInRegion = city.regionId === zoomedRegion.id;
-            return (
-              <Marker key={city.id} coordinates={city.coordinates}>
-                <text
-                  textAnchor="middle"
-                  y={-6}
-                  style={{
-                    fontFamily: 'system-ui, sans-serif',
-                    fontSize: isInRegion ? 11 : 8,
-                    fontWeight: isInRegion ? 700 : 400,
-                    fill: isInRegion ? '#1e293b' : '#94a3b8',
-                    stroke: '#fff',
-                    strokeWidth: isInRegion ? 3 : 2,
-                    paintOrder: 'stroke',
-                    pointerEvents: 'none',
-                  }}
-                >
-                  {city.name}
-                </text>
-              </Marker>
-            );
-          })}
+          {/* Region zoom — city name labels (only cities in zoomed region) */}
+          {zoomedRegion && regionCities.map((city) => (
+            <Marker key={city.id} coordinates={city.coordinates}>
+              <text
+                textAnchor="middle"
+                y={-6}
+                style={{
+                  fontFamily: 'system-ui, sans-serif',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  fill: '#1e293b',
+                  stroke: '#fff',
+                  strokeWidth: 3,
+                  paintOrder: 'stroke',
+                  pointerEvents: 'none',
+                }}
+              >
+                {city.name}
+              </text>
+            </Marker>
+          ))}
         </ComposableMap>
 
         {/* Tooltip */}
