@@ -1,10 +1,13 @@
 import { useState } from 'react';
 
+// ─── i18n content: { en, ru } per section ───────────────────────────────────
+
 const sections = [
   {
     id: 'overview',
-    title: 'Architecture Overview',
-    content: `
+    title: { en: 'Architecture Overview', ru: 'Обзор архитектуры' },
+    content: {
+      en: `
 **CatHunter Dashboard** — single-page React application (Vite + Tailwind CSS) for visualizing cat-hunting activity worldwide.
 
 ### Tech Stack
@@ -39,11 +42,48 @@ public/
 └── admin1.json                — TopoJSON for admin-1 regions
 \`\`\`
 `,
+      ru: `
+**CatHunter Dashboard** — одностраничное React-приложение (Vite + Tailwind CSS) для визуализации активности охотников за котами по всему миру.
+
+### Стек технологий
+- **React 18** + Vite
+- **Recharts** — все графики (BarChart, LineChart)
+- **react-simple-maps** — интерактивная карта мира
+- **Tailwind CSS** — стилизация
+- **Деплой** на Vercel
+
+### Слой данных
+Все данные **генерируются на клиенте** с помощью детерминированного ГПСЧ (\`seededRandom(42)\`). **Нет ни одного API-вызова** для метрик. Единственные внешние запросы — TopoJSON-файлы карт.
+
+### Структура файлов
+\`\`\`
+src/
+├── App.jsx                    — корень: состояние, деривация данных, лейаут
+├── data/
+│   └── fakeData.js            — ~3700 строк: генерация данных + фильтрация/агрегация
+├── components/
+│   ├── Filters.jsx            — липкая панель фильтров (5 контролов)
+│   ├── KpiCards.jsx           — 4 KPI-карточки
+│   ├── UsersAndCatsChart.jsx  — группированная столбчатая диаграмма
+│   ├── DauMauChart.jsx        — линейный график
+│   ├── AgeSexChart.jsx        — горизонтальная пирамида возраст/пол
+│   ├── EngagementChart.jsx    — двойной линейный график
+│   ├── InsightsBlock.jsx      — ИИ-плашки с инсайтами
+│   ├── WorldHeatmap.jsx       — интерактивная хороплет-карта
+│   └── DevDocsPage.jsx        — эта страница
+├── utils/
+│   └── formatNumber.js        — formatNumber, formatDauMau, formatChange
+public/
+└── admin1.json                — TopoJSON для admin-1 регионов
+\`\`\`
+`,
+    },
   },
   {
     id: 'endpoints',
-    title: 'Data Endpoints (for real backend)',
-    content: `
+    title: { en: 'Data Endpoints (for real backend)', ru: 'Эндпоинты данных (для реального бэкенда)' },
+    content: {
+      en: `
 Currently all data is fake and generated in \`fakeData.js\`. When connecting a real backend, replace the following exports:
 
 ### Required API Endpoints
@@ -82,11 +122,52 @@ Currently all data is fake and generated in \`fakeData.js\`. When connecting a r
 | \`https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json\` | Base world map (TopoJSON, 110m resolution) |
 | \`/admin1.json\` (local) | Admin-1 regions (built from Natural Earth via \`scripts/build-admin1.mjs\`) |
 `,
+      ru: `
+Сейчас все данные фейковые и генерируются в \`fakeData.js\`. При подключении реального бэкенда нужно заменить следующие экспорты:
+
+### Необходимые API-эндпоинты
+
+| Эндпоинт | Заменяет | Возвращает |
+|---|---|---|
+| \`GET /api/metrics/daily?country=&continent=&from=&to=\` | \`countryDailyData\`, \`dailyData\` | Массив объектов дневных метрик |
+| \`GET /api/metrics/kpis?period=&country=&continent=&platform=&catType=\` | \`computeKpis()\` | \`{ users, cats, shots, dauMau }\` с полями \`.value\` и \`.change\` |
+| \`GET /api/demographics/age-sex?country=&continent=\` | \`ageSexData\`, \`countryAgeSexData\` | Массив \`{ ageGroup, male, female }\` |
+| \`GET /api/geo/countries\` | \`COUNTRIES\` | Список стран с \`code\`, \`name\`, \`continent\`, \`center\`, поведенческими профилями |
+| \`GET /api/geo/regions?country=\` | \`ADMIN_REGIONS\` | Список admin-1 регионов с \`isoCode\`, \`name\`, \`center\`, \`weight\` |
+| \`GET /api/geo/cities?country=&region=\` | \`CAT_CITIES\` | Список городов с \`coordinates\`, \`weight\`, \`spread\` |
+| \`GET /api/insights?days=30\` | \`InsightsBlock.detectInsights()\` | Массив \`{ type, text, priority }\` |
+
+### Структура объекта дневных метрик
+\`\`\`js
+{
+  date: "2026-01-15",       // ISO-дата
+  newUsers: 142,            // новые регистрации за день
+  newUsersIos: 83,          // доля iOS
+  newUsersAndroid: 59,      // доля Android
+  newCats: 199,             // уникальных котов сфотографировано
+  newCatsStray: 89,         // бездомные коты
+  newCatsHome: 110,         // домашние коты
+  catsShot: 199,            // то же что newCats (алиас)
+  shots: 597,               // всего фото сделано
+  dauMau: 0.24,             // отношение DAU/MAU (0–1)
+  dau: 1200,                // дневные активные пользователи
+  mau: 5000,                // месячные активные пользователи
+}
+\`\`\`
+
+### Внешние ресурсы (карта)
+| URL | Назначение |
+|---|---|
+| \`https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json\` | Базовая карта мира (TopoJSON, разрешение 110m) |
+| \`/admin1.json\` (локальный) | Admin-1 регионы (собран из Natural Earth через \`scripts/build-admin1.mjs\`) |
+`,
+    },
   },
   {
     id: 'filters',
-    title: 'Filter System',
-    content: `
+    title: { en: 'Filter System', ru: 'Система фильтров' },
+    content: {
+      en: `
 ### Filter State
 \`\`\`js
 { period: 'Y', continent: 'ALL', country: 'ALL', platform: 'ALL', catType: 'ALL' }
@@ -120,11 +201,47 @@ Currently all data is fake and generated in \`fakeData.js\`. When connecting a r
 ### Continent → Country Dependency
 Selecting a continent resets \`country\` to ALL. Country dropdown only shows countries from the selected continent.
 `,
+      ru: `
+### Состояние фильтров
+\`\`\`js
+{ period: 'Y', continent: 'ALL', country: 'ALL', platform: 'ALL', catType: 'ALL' }
+\`\`\`
+
+### Элементы управления
+
+| Фильтр | Тип | Значения | По умолчанию |
+|---|---|---|---|
+| **Period** | Кнопки | D (1 день), W (7 дней), M (30 дней), Y (365 дней), ALL (548 дней) | Y |
+| **Continent** | Выпадающий список | ALL, North America, South America, Europe, Asia, Africa, Oceania | ALL |
+| **Country** | Выпадающий список | ALL + 25 стран (фильтруются по континенту) | ALL |
+| **Platform** | Кнопки | ALL, iOS, Android | ALL |
+| **Cat Type** | Кнопки | ALL, Stray, Home | ALL |
+
+### Пайплайн фильтрации (\`filterData()\`)
+1. **\`resolveSource()\`** — выбирает источник данных:
+   - Выбрана страна → \`countryDailyData[country]\`
+   - Выбран континент → агрегация всех стран континента
+   - Иначе → глобальный \`dailyData\`
+2. **\`.slice(-days)\`** — берёт последние N дней по выбранному периоду
+3. **\`applyPlatform()\`** — если платформа ≠ ALL, масштабирует метрики по доле пользователей платформы:
+   - \`userRatio = platformUsers / totalUsers\`
+   - Фото корректируются через \`PLATFORM_ENGAGEMENT = { iOS: 1.25, Android: 0.82 }\`
+   - Пользователи iOS делают на 25% больше фото на кота; Android — на 18% меньше
+4. **\`applyCatType()\`** — если тип кота ≠ ALL, масштабирует метрики по доле типа:
+   - \`ratio = selectedCats / totalCats\`
+   - Фото корректируются через \`CATTYPE_ENGAGEMENT = { Stray: 1.30, Home: 0.70 }\`
+   - Охотники за бездомными делают на 30% больше фото; владельцы домашних — на 30% меньше
+
+### Зависимость Continent → Country
+При выборе континента \`country\` сбрасывается в ALL. В выпадающем списке стран отображаются только страны выбранного континента.
+`,
+    },
   },
   {
     id: 'kpi-cards',
-    title: 'KPI Cards',
-    content: `
+    title: { en: 'KPI Cards', ru: 'KPI-карточки' },
+    content: {
+      en: `
 ### Component: \`KpiCards.jsx\`
 
 4 summary cards displayed above charts.
@@ -147,11 +264,36 @@ Each card shows a **% change** vs the previous period of equal length.
 ### Filter Dependencies
 All 5 filters affect KPI values. The data goes through the full \`filterData()\` pipeline.
 `,
+      ru: `
+### Компонент: \`KpiCards.jsx\`
+
+4 карточки-сводки над графиками.
+
+| Карточка | Метрика | Формула |
+|---|---|---|
+| **New Users** | Всего новых регистраций за период | \`sum(filtered.newUsers)\` |
+| **Cats Shot** | Всего уникальных котов сфотографировано | \`sum(filtered.catsShot \\|\\| newCats)\` |
+| **Shots** | Всего фото сделано | \`sum(filtered.shots)\` |
+| **DAU/MAU** | Отношение дневных к месячным активным | Значение \`dauMau\` за последний день (диапазон 0–1, отображается как напр. 0.24) |
+
+### Стрелки трендов
+Каждая карточка показывает **% изменения** по сравнению с предыдущим периодом такой же длины.
+
+- \`getPreviousPeriodData()\` берёт окно такой же длины непосредственно перед текущим
+- Формула: \`change = ((current - previous) / previous) * 100\`
+- Зелёная ▲ при росте, Красная ▼ при падении
+- DAU/MAU дополнительно показывает "As of {date} (trailing 30d)"
+
+### Зависимость от фильтров
+Все 5 фильтров влияют на значения KPI. Данные проходят через полный пайплайн \`filterData()\`.
+`,
+    },
   },
   {
     id: 'users-cats-chart',
-    title: 'Chart: New Users & Cats',
-    content: `
+    title: { en: 'Chart: New Users & Cats', ru: 'График: Новые пользователи и коты' },
+    content: {
+      en: `
 ### Component: \`UsersAndCatsChart.jsx\`
 
 **Type:** Grouped vertical BarChart (Recharts)
@@ -159,8 +301,8 @@ All 5 filters affect KPI values. The data goes through the full \`filterData()\`
 **Data source:** \`aggregateForChart(filtered, period)\`
 
 **Bars:**
-- 🔵 **New Users** (\`newUsers\`) — blue \`#3b82f6\`
-- 🟠 **New Cats** (\`newCats\`) — orange \`#f97316\`
+- **New Users** (\`newUsers\`) — blue \`#3b82f6\`
+- **New Cats** (\`newCats\`) — orange \`#f97316\`
 
 ### Aggregation Logic (\`aggregateForChart\`)
 
@@ -175,11 +317,37 @@ All 5 filters affect KPI values. The data goes through the full \`filterData()\`
 ### Filter Dependencies
 All 5 filters affect this chart through the \`filterData()\` pipeline.
 `,
+      ru: `
+### Компонент: \`UsersAndCatsChart.jsx\`
+
+**Тип:** Группированная вертикальная столбчатая диаграмма (Recharts)
+
+**Источник данных:** \`aggregateForChart(filtered, period)\`
+
+**Столбцы:**
+- **New Users** (\`newUsers\`) — синий \`#3b82f6\`
+- **New Cats** (\`newCats\`) — оранжевый \`#f97316\`
+
+### Логика агрегации (\`aggregateForChart\`)
+
+| Период | Подписи по оси X | Агрегация |
+|---|---|---|
+| **D** (1 день) | 24 часовых бакета: \`0:00\`–\`23:00\` | Гауссово распределение с пиком в 16:00 |
+| **W** (неделя) | 7 дневных подписей: \`MM-DD\` | Сырые дневные значения |
+| **M** (месяц) | 30 дневных подписей: \`MM-DD\` | Сырые дневные значения |
+| **Y** (год) | 12 месячных подписей: \`Jan\`–\`Dec\` | Сумма users/cats/shots за месяц, среднее DAU/MAU |
+| **ALL** | Все месяцы | То же что Y, но без ограничения в 12 месяцев |
+
+### Зависимость от фильтров
+Все 5 фильтров влияют на этот график через пайплайн \`filterData()\`.
+`,
+    },
   },
   {
     id: 'daumau-chart',
-    title: 'Chart: DAU/MAU',
-    content: `
+    title: { en: 'Chart: DAU/MAU', ru: 'График: DAU/MAU' },
+    content: {
+      en: `
 ### Component: \`DauMauChart.jsx\`
 
 **Type:** LineChart (Recharts)
@@ -187,7 +355,7 @@ All 5 filters affect this chart through the \`filterData()\` pipeline.
 **Data source:** \`aggregateForChart(filtered, period)\` → maps each point to \`dauMau\` rounded to 2 decimals.
 
 **Line:**
-- 🟣 \`dauMau\` — indigo \`#6366f1\`, Y-axis domain \`[0, 0.4]\`
+- \`dauMau\` — indigo \`#6366f1\`, Y-axis domain \`[0, 0.4]\`
 
 ### What DAU/MAU Means
 - **DAU** = Daily Active Users (users who opened the app today)
@@ -202,11 +370,36 @@ All 5 filters affect this chart through the \`filterData()\` pipeline.
 ### Filter Dependencies
 All 5 filters. Platform filter additionally adjusts DAU/MAU by engagement factor (iOS users are stickier).
 `,
+      ru: `
+### Компонент: \`DauMauChart.jsx\`
+
+**Тип:** Линейный график (Recharts)
+
+**Источник данных:** \`aggregateForChart(filtered, period)\` → каждая точка проецируется в \`dauMau\`, округлённый до 2 знаков.
+
+**Линия:**
+- \`dauMau\` — индиго \`#6366f1\`, домен оси Y \`[0, 0.4]\`
+
+### Что значит DAU/MAU
+- **DAU** = Daily Active Users (пользователи, открывшие приложение сегодня)
+- **MAU** = Monthly Active Users (пользователи, открывшие приложение за последние 30 дней)
+- Отношение показывает «липкость»: высокое значение (напр. 0.30) означает, что 30% месячных пользователей возвращаются каждый день
+
+### Как генерируется DAU/MAU (фейковые данные)
+- Базовое: \`0.12 + progress * 0.14 + noise\` — растёт с ~12% до ~26% за 548 дней
+- Ограничено диапазоном \`[0.06, 0.42]\`
+- По странам: модель экспоненциального затухания от кумулятивной базы установок
+
+### Зависимость от фильтров
+Все 5 фильтров. Фильтр платформы дополнительно корректирует DAU/MAU через коэффициент вовлечённости (iOS-пользователи «липче»).
+`,
+    },
   },
   {
     id: 'age-sex-chart',
-    title: 'Chart: Age/Sex Pyramid',
-    content: `
+    title: { en: 'Chart: Age/Sex Pyramid', ru: 'График: Пирамида возраст/пол' },
+    content: {
+      en: `
 ### Component: \`AgeSexChart.jsx\`
 
 **Type:** Horizontal population pyramid (vertical BarChart with \`layout="vertical"\`)
@@ -214,8 +407,8 @@ All 5 filters. Platform filter additionally adjusts DAU/MAU by engagement factor
 **Data source:** Computed in \`App.jsx\` from \`ageSexData\` / \`countryAgeSexData\`
 
 **Bars:**
-- 🔵 **Male** — blue \`#3b82f6\` (right side, positive values)
-- 🩷 **Female** — pink \`#ec4899\` (left side, negative values for visual symmetry)
+- **Male** — blue \`#3b82f6\` (right side, positive values)
+- **Female** — pink \`#ec4899\` (left side, negative values for visual symmetry)
 
 ### Age Groups
 \`['13-17', '18-21', '22-25', '26-30', '31-35', '36-40', '41-49', '50-59', '60-69', '70+']\`
@@ -231,11 +424,38 @@ All 5 filters. Platform filter additionally adjusts DAU/MAU by engagement factor
 - **Country/Continent** → changes the age distribution shape (different countries have different age peaks)
 - **Period/Platform/CatType** → changes the total user count that gets distributed, but the shape stays the same
 `,
+      ru: `
+### Компонент: \`AgeSexChart.jsx\`
+
+**Тип:** Горизонтальная пирамида населения (вертикальный BarChart с \`layout="vertical"\`)
+
+**Источник данных:** Вычисляется в \`App.jsx\` из \`ageSexData\` / \`countryAgeSexData\`
+
+**Столбцы:**
+- **Male** — синий \`#3b82f6\` (правая сторона, положительные значения)
+- **Female** — розовый \`#ec4899\` (левая сторона, отрицательные значения для визуальной симметрии)
+
+### Возрастные группы
+\`['13-17', '18-21', '22-25', '26-30', '31-35', '36-40', '41-49', '50-59', '60-69', '70+']\`
+
+### Логика данных
+1. **Базовое распределение** выбирается по гео-фильтру:
+   - Выбрана страна → \`countryAgeSexData[country]\` (вариант для страны со сдвинутым пиком)
+   - Выбран континент → сумма всех стран этого континента
+   - Иначе → глобальный \`ageSexData\` (колокольная кривая с пиком на 26-30)
+2. **Масштабирование**: Базовое распределение используется как относительные веса. Отфильтрованный \`totalUsers\` (из period/platform/catType) распределяется по возрастным группам через \`distributeInt()\`, затем делится пропорционально на male/female.
+
+### Зависимость от фильтров
+- **Country/Continent** → меняет форму возрастного распределения (в разных странах разные возрастные пики)
+- **Period/Platform/CatType** → меняет общее количество пользователей для распределения, но форма остаётся той же
+`,
+    },
   },
   {
     id: 'engagement-chart',
-    title: 'Chart: Engagement Ratios',
-    content: `
+    title: { en: 'Chart: Engagement Ratios', ru: 'График: Коэффициенты вовлечённости' },
+    content: {
+      en: `
 ### Component: \`EngagementChart.jsx\`
 
 **Type:** Dual-line LineChart (Recharts)
@@ -243,8 +463,8 @@ All 5 filters. Platform filter additionally adjusts DAU/MAU by engagement factor
 **Data source:** \`aggregateForChart(filtered, period)\` → computes ratios per data point
 
 **Lines:**
-- 🔵 **Cats/User** (\`newCats / newUsers\`) — sky blue \`#0ea5e9\`
-- 🟠 **Shots/Cat** (\`shots / newCats\`) — orange \`#f97316\`
+- **Cats/User** (\`newCats / newUsers\`) — sky blue \`#0ea5e9\`
+- **Shots/Cat** (\`shots / newCats\`) — orange \`#f97316\`
 
 ### What These Ratios Mean
 - **Cats/User**: How many unique cats each user photographs on average. Higher = users are more active.
@@ -258,11 +478,36 @@ All 5 filters. Platform filter additionally adjusts DAU/MAU by engagement factor
 ### Filter Dependencies
 All 5 filters. Platform/CatType filters shift the engagement multipliers (iOS users and stray hunters have higher shots/cat).
 `,
+      ru: `
+### Компонент: \`EngagementChart.jsx\`
+
+**Тип:** Двойной линейный график (Recharts)
+
+**Источник данных:** \`aggregateForChart(filtered, period)\` → вычисляет отношения для каждой точки
+
+**Линии:**
+- **Cats/User** (\`newCats / newUsers\`) — голубой \`#0ea5e9\`
+- **Shots/Cat** (\`shots / newCats\`) — оранжевый \`#f97316\`
+
+### Что означают эти отношения
+- **Cats/User**: Сколько уникальных котов фотографирует каждый пользователь в среднем. Выше = пользователи активнее.
+- **Shots/Cat**: Сколько фото делается на одного кота. Выше = пользователи тщательнее (или коты фотогеничнее).
+
+### Типичные значения (по профилям стран)
+- Турция: Cats/User ~2.0, Shots/Cat ~4.5 (максимальная вовлечённость, много бездомных котов)
+- Великобритания: Cats/User ~0.9, Shots/Cat ~3.0 (меньше котов на пользователя, в основном домашние)
+- Япония: Cats/User ~1.1, Shots/Cat ~5.0 (меньше котов, но много фото на кота)
+
+### Зависимость от фильтров
+Все 5 фильтров. Фильтры Platform/CatType сдвигают множители вовлечённости (iOS-пользователи и охотники за бездомными имеют выше shots/cat).
+`,
+    },
   },
   {
     id: 'insights',
-    title: 'AI Insights Panel',
-    content: `
+    title: { en: 'AI Insights Panel', ru: 'ИИ-панель инсайтов' },
+    content: {
+      en: `
 ### Component: \`InsightsBlock.jsx\`
 
 **Position:** Top of dashboard, above filters.
@@ -273,37 +518,76 @@ All 5 filters. Platform/CatType filters shift the engagement multipliers (iOS us
 
 Each slot picks the single best candidate across all 25 countries:
 
-#### Slot 1: Peak / Record (★ amber)
+#### Slot 1: Peak / Record (amber)
 Finds the most impressive stat. Candidates:
-- **Record day**: Single-day user count ≥ 1.8× the 30-day average and ≥ 10 users. Priority weighted by ratio × log₂(avg).
-- **Volume leader**: Country with highest total users in 30 days. Priority = log₂(total) × 8.
-- **Engagement leader**: Country with highest shots/cat (minimum 50 cats). Priority = spc × log₂(cats) × 2.
+- **Record day**: Single-day user count >= 1.8x the 30-day average and >= 10 users. Priority weighted by ratio x log2(avg).
+- **Volume leader**: Country with highest total users in 30 days. Priority = log2(total) x 8.
+- **Engagement leader**: Country with highest shots/cat (minimum 50 cats). Priority = spc x log2(cats) x 2.
 
 Only the #1 volume leader and #1 engagement leader are kept; all record-day candidates compete.
 
-#### Slot 2: Growth (▲ green)
+#### Slot 2: Growth (green)
 Best upward signal. Candidates:
-- **Week-over-week growth**: This week vs last week, ≥ 15% increase with ≥ 15 users last week.
-- **Growth streak**: Longest consecutive days of increasing 3-day moving average (≥ 4 days, MA must be >1.01× previous).
-- **Rolling spike**: Best 5-day window where after-average > before-average by ≥ 40%.
+- **Week-over-week growth**: This week vs last week, >= 15% increase with >= 15 users last week.
+- **Growth streak**: Longest consecutive days of increasing 3-day moving average (>= 4 days, MA must be >1.01x previous).
+- **Rolling spike**: Best 5-day window where after-average > before-average by >= 40%.
 
-#### Slot 3: Decline (▼ red)
+#### Slot 3: Decline (red)
 Worst downward signal. Candidates:
-- **Week-over-week decline**: This week vs last week, ≥ 15% decrease.
-- **Decline streak**: Longest consecutive days of decreasing 3-day MA (≥ 4 days, MA must be <0.99× previous).
-- **Rolling dip**: Worst 5-day window where after-average < before-average by ≥ 25%.
+- **Week-over-week decline**: This week vs last week, >= 15% decrease.
+- **Decline streak**: Longest consecutive days of decreasing 3-day MA (>= 4 days, MA must be <0.99x previous).
+- **Rolling dip**: Worst 5-day window where after-average < before-average by >= 25%.
 
 ### Priority Scoring
-Each candidate gets a \`priority\` score combining magnitude and market size (using log₂ weighting). The top-1 from each slot wins.
+Each candidate gets a \`priority\` score combining magnitude and market size (using log2 weighting). The top-1 from each slot wins.
 
 ### Important: No Filter Dependency
 InsightsBlock data is fixed at \`dailyData.slice(-30)\` and does NOT react to any filter changes. This is intentional — insights provide a stable global overview.
 `,
+      ru: `
+### Компонент: \`InsightsBlock.jsx\`
+
+**Расположение:** Верх дашборда, над фильтрами.
+
+**Источник данных:** \`dailyData.slice(-30)\` — **ВСЕГДА последние 30 дней глобальных данных, игнорируя все фильтры.**
+
+### Три слота инсайтов
+
+Каждый слот выбирает одного лучшего кандидата среди всех 25 стран:
+
+#### Слот 1: Пик / Рекорд (янтарный)
+Ищет самый впечатляющий показатель. Кандидаты:
+- **Рекордный день**: Дневное количество пользователей >= 1.8x от 30-дневного среднего и >= 10 пользователей. Приоритет взвешен по ratio x log2(avg).
+- **Лидер по объёму**: Страна с наибольшим количеством пользователей за 30 дней. Приоритет = log2(total) x 8.
+- **Лидер по вовлечённости**: Страна с наибольшим shots/cat (минимум 50 котов). Приоритет = spc x log2(cats) x 2.
+
+Остаётся только #1 лидер по объёму и #1 лидер по вовлечённости; все кандидаты рекордных дней конкурируют.
+
+#### Слот 2: Рост (зелёный)
+Лучший сигнал роста. Кандидаты:
+- **Неделя к неделе рост**: Эта неделя vs прошлая, >= 15% рост при >= 15 пользователях на прошлой неделе.
+- **Серия роста**: Самая длинная последовательность дней с растущей 3-дневной скользящей средней (>= 4 дней, MA должна быть >1.01x предыдущей).
+- **Скользящий всплеск**: Лучшее 5-дневное окно, где среднее «после» > среднего «до» на >= 40%.
+
+#### Слот 3: Снижение (красный)
+Худший сигнал снижения. Кандидаты:
+- **Неделя к неделе снижение**: Эта неделя vs прошлая, >= 15% падение.
+- **Серия снижения**: Самая длинная последовательность дней с падающей 3-дневной скользящей средней (>= 4 дней, MA должна быть <0.99x предыдущей).
+- **Скользящий провал**: Худшее 5-дневное окно, где среднее «после» < среднего «до» на >= 25%.
+
+### Система приоритетов
+Каждый кандидат получает оценку \`priority\`, объединяющую масштаб и размер рынка (взвешивание через log2). Побеждает top-1 из каждого слота.
+
+### Важно: нет зависимости от фильтров
+Данные InsightsBlock зафиксированы на \`dailyData.slice(-30)\` и НЕ реагируют на изменения фильтров. Это сделано намеренно — инсайты дают стабильный глобальный обзор.
+`,
+    },
   },
   {
     id: 'world-map',
-    title: 'World Heatmap (Cats Map)',
-    content: `
+    title: { en: 'World Heatmap (Cats Map)', ru: 'Мировая тепловая карта (Cats Map)' },
+    content: {
+      en: `
 ### Component: \`WorldHeatmap.jsx\` (~660 lines)
 
 **Library:** \`react-simple-maps\` with Mercator projection.
@@ -327,9 +611,9 @@ InsightsBlock data is fixed at \`dailyData.slice(-30)\` and does NOT react to an
 - Dot count = region's cat metric, capped at **500** for performance
 - Dots are Gaussian-scattered around city coordinates using \`spread\` parameter
 - Dots filtered by region polygon using ray-casting point-in-polygon test
-- 🟠 Orange dots = Stray cats, 🔵 Blue dots = Home cats
+- Orange dots = Stray cats, Blue dots = Home cats
 - City name labels shown for cities in the zoomed region
-- Breadcrumb navigation: World › Country › Region
+- Breadcrumb navigation: World > Country > Region
 
 ### Map Data Sources
 - **World polygons**: CDN \`world-atlas@2/countries-110m.json\` (Natural Earth 110m)
@@ -343,11 +627,53 @@ InsightsBlock data is fixed at \`dailyData.slice(-30)\` and does NOT react to an
 - **Continent** → controls which countries are highlighted/clickable (cosmetic only)
 - **Country** → triggers drill-down view
 `,
+      ru: `
+### Компонент: \`WorldHeatmap.jsx\` (~660 строк)
+
+**Библиотека:** \`react-simple-maps\` с проекцией Меркатора.
+
+### Три уровня детализации (drill-down)
+
+#### Уровень 1: Мировой вид
+- Хороплет-карта, окрашенная по метрике **cats** для каждой страны
+- Цветовая шкала: интенсивность по корню \`Math.pow(value / maxVal, 0.5)\`, маппится в синий градиент
+- Тултип при наведении: название страны, users, cats, shots
+- **Клик** по стране → устанавливает \`filters.country\`, зумит
+
+#### Уровень 2: Вид страны / Admin-1
+- Показывает admin-1 регионы (штаты, провинции, области) для выбранной страны
+- Регионы окрашены по их доле от общего количества котов страны
+- Данные регионов распределяются через систему весов: \`regionWeight + sum(cityWeights)\`
+- **Клик** по региону → зумит в регион
+
+#### Уровень 3: Зум региона
+- Показывает отдельные точки-маркеры котов, разбросанные вокруг городов
+- Количество точек = метрика котов региона, ограничено **500** для производительности
+- Точки рассеиваются по Гауссу вокруг координат городов через параметр \`spread\`
+- Точки фильтруются полигоном региона через ray-casting тест «точка-в-полигоне»
+- Оранжевые точки = Бездомные коты, Синие точки = Домашние коты
+- Подписи названий городов отображаются для городов в зумированном регионе
+- Навигация breadcrumb: World > Country > Region
+
+### Источники данных карты
+- **Полигоны стран**: CDN \`world-atlas@2/countries-110m.json\` (Natural Earth 110m)
+- **Полигоны Admin-1**: \`/admin1.json\` (собран из Natural Earth через \`scripts/build-admin1.mjs\`)
+- **Крым**: Кастомный полигон-оверлей, всегда отображается цветом России (ID 643)
+
+### Зависимость от фильтров
+- **Period** → меняет временное окно для агрегации котов по стране/региону
+- **Platform** → масштабирует метрики по доле пользователей платформы
+- **CatType** → масштабирует метрики по доле типа котов; также управляет цветом точек при зуме
+- **Continent** → управляет подсветкой/кликабельностью стран (только визуально)
+- **Country** → запускает drill-down вид
+`,
+    },
   },
   {
     id: 'geo-data',
-    title: 'Geographic Data: Countries, Regions, Cities',
-    content: `
+    title: { en: 'Geographic Data: Countries, Regions, Cities', ru: 'Геоданные: Страны, Регионы, Города' },
+    content: {
+      en: `
 ### Countries (\`COUNTRIES\` — 25 total)
 
 Each country has a **behavioral profile** that controls data generation:
@@ -417,41 +743,113 @@ Each city has:
 6. Add cities to \`CAT_CITIES\`
 7. Rebuild \`admin1.json\` if needed
 `,
+      ru: `
+### Страны (\`COUNTRIES\` — 25 шт.)
+
+Каждая страна имеет **поведенческий профиль**, управляющий генерацией данных:
+
+| Поле | Описание | Пример (Турция) |
+|---|---|---|
+| \`code\` | ISO 3166-1 alpha-3 | \`TUR\` |
+| \`name\` | Отображаемое имя | \`Turkey\` |
+| \`continent\` | Один из 6 континентов | \`Europe\` |
+| \`userWeight\` | Относительный объём пользователей (USA=100 — максимум) | \`16\` |
+| \`catsPerUser\` | Среднее кол-во котов на пользователя | \`2.0\` |
+| \`shotsPerCat\` | Среднее кол-во фото на кота | \`4.5\` |
+| \`iosShare\` | Доля пользователей на iOS | \`0.22\` |
+| \`strayShare\` | Доля бездомных котов | \`0.85\` |
+| \`center\` | Координаты центра карты \`[lon, lat]\` | \`[35, 39]\` |
+
+**Полный список стран по континентам:**
+
+**Северная Америка:** USA (100), Canada (15), Mexico (20)
+**Южная Америка:** Brazil (45), Argentina (8), Chile (4), Colombia (7)
+**Европа:** UK (30), Germany (25), France (22), Spain (15), Italy (17), Russia (28), Turkey (16)
+**Азия:** India (80), China (60), Japan (35), South Korea (18), Indonesia (40), Thailand (14), Philippines (13)
+**Африка:** Nigeria (10), South Africa (6), Egypt (9)
+**Океания:** Australia (12)
+
+*(Числа в скобках = userWeight)*
+
+### Admin-1 регионы (\`ADMIN_REGIONS\`)
+
+Регионы — это admin-1 подразделения (штаты, провинции, области и т.д.). Каждый имеет:
+- \`id\` / \`isoCode\` — код ISO 3166-2 (напр. \`US-CA\`, \`RU-MOW\`)
+- \`countryCode\` — alpha-3 код родительской страны
+- \`name\` — отображаемое имя
+- \`center\` — \`[lon, lat]\` для центрирования карты
+- \`weight\` — относительная важность для распределения метрик (шкала 0-12)
+
+Регионы делятся на два уровня:
+1. **Вручную курированные** (weight 3-12): крупные штаты/провинции с явными весами
+2. **Автоматически сгенерированные из TopoJSON** (weight 1): все остальные регионы для покрытия карты
+
+Геометрия полигонов admin-1 берётся из \`/admin1.json\`, собранного из данных Natural Earth через \`scripts/build-admin1.mjs\`.
+
+### Города (\`CAT_CITIES\`)
+
+Города существуют внутри регионов и служат двум целям:
+1. **Распределение весов** — города добавляют свой вес к доле родительского региона от метрик страны
+2. **Размещение точек** — при зуме региона точки-коты рассеиваются по Гауссу вокруг координат городов
+
+Каждый город имеет:
+- \`countryCode\` + \`regionId\` — ссылка на родительский регион
+- \`name\` — отображается как подпись при зуме региона
+- \`coordinates\` — \`[lon, lat]\`
+- \`weight\` — относительная важность (добавляется к весу региона)
+- \`spread\` — радиус гауссова рассеивания для размещения точек (0.15–0.30)
+
+### Как получить эти списки для фильтров
+- **Выпадающий список стран**: Импортировать \`COUNTRIES\` из \`fakeData.js\`, фильтровать по выбранному континенту
+- **Регионы**: Импортировать \`ADMIN_REGIONS\`, фильтровать по \`countryCode\`
+- **Города**: Импортировать \`CAT_CITIES\`, фильтровать по \`countryCode\` и опционально по \`regionId\`
+
+### Добавление новой страны
+1. Добавить запись в массив \`COUNTRIES\` со всеми поведенческими полями
+2. Добавить в маппинг \`NUMERIC_TO_ALPHA3\` в \`WorldHeatmap.jsx\`
+3. Добавить в \`COUNTRY_FLAGS\` в \`Filters.jsx\`
+4. Добавить в \`COUNTRY_SCALE\` в \`WorldHeatmap.jsx\`
+5. Добавить admin-1 регионы в \`ADMIN_REGIONS\`
+6. Добавить города в \`CAT_CITIES\`
+7. Пересобрать \`admin1.json\` при необходимости
+`,
+    },
   },
   {
     id: 'data-generation',
-    title: 'Fake Data Generation',
-    content: `
+    title: { en: 'Fake Data Generation', ru: 'Генерация фейковых данных' },
+    content: {
+      en: `
 ### Seed & Reproducibility
 All random values use \`seededRandom(42)\` — deterministic PRNG. Same seed = same data every time.
 
 ### Generation Pipeline
 
 #### Step 1: \`generateGlobalCurve()\`
-Generates 548 days (2024-08-11 → 2026-02-10) of global user counts:
+Generates 548 days (2024-08-11 to 2026-02-10) of global user counts:
 
 \`\`\`
-base = 30 + 190 × progress^1.25              // logistic-ish growth: ~30 → ~220 users/day
-× seasonalFactor                                // summer peak, winter dip (±12%)
-× weekendFactor                                 // weekends: +10-18%
-× spikeFactor                                   // 2% chance of 1.25–1.85× spike
-× dipFactor                                     // 6-8 random dips (4-12 days each, 60-85% depth)
-× noise                                         // uniform noise 0.88–1.16
+base = 30 + 190 * progress^1.25              // logistic-ish growth: ~30 -> ~220 users/day
+* seasonalFactor                                // summer peak, winter dip (+/-12%)
+* weekendFactor                                 // weekends: +10-18%
+* spikeFactor                                   // 2% chance of 1.25-1.85x spike
+* dipFactor                                     // 6-8 random dips (4-12 days each, 60-85% depth)
+* noise                                         // uniform noise 0.88-1.16
 \`\`\`
 
-Also generates global DAU/MAU: \`0.12 + progress × 0.14 + normal(0, 0.015)\`, clamped to [0.06, 0.42].
+Also generates global DAU/MAU: \`0.12 + progress * 0.14 + normal(0, 0.015)\`, clamped to [0.06, 0.42].
 
 #### Step 2: \`generateCountryDailyData()\`
 Distributes global daily users across 25 countries:
 
-1. Per-country weight = \`userWeight / totalWeight × normalNoise(1.0, 0.18)\`
+1. Per-country weight = \`userWeight / totalWeight * normalNoise(1.0, 0.18)\`
 2. \`distributeInt(globalUsers, weights)\` — integer distribution via largest-remainder method
 3. Per country per day:
    - \`newUsers\` = distributed share
-   - \`newUsersIos\` = \`round(newUsers × iosShare × noise)\`
-   - \`newCats\` = \`round(newUsers × catsPerUser × noise)\`
-   - \`newCatsStray\` = \`round(newCats × strayShare × noise)\`
-   - \`shots\` = \`round(newCats × shotsPerCat × noise)\`
+   - \`newUsersIos\` = \`round(newUsers * iosShare * noise)\`
+   - \`newCats\` = \`round(newUsers * catsPerUser * noise)\`
+   - \`newCatsStray\` = \`round(newCats * strayShare * noise)\`
+   - \`shots\` = \`round(newCats * shotsPerCat * noise)\`
    - \`dauMau\` = exponential decay model of cumulative install base
 
 #### Step 3: \`generateDailyFromCountries()\`
@@ -459,12 +857,97 @@ Sums all country daily data back into the global \`dailyData\` array.
 
 ### Age/Sex Distribution
 - Global: bell curve peaking at age group index 4 (26-30), Box-Muller noise for male/female split
-- Per-country: random peak shift ±0–3 positions, scaled by \`userWeight / 100\`
+- Per-country: random peak shift +/-0-3 positions, scaled by \`userWeight / 100\`
 `,
+      ru: `
+### Сид и воспроизводимость
+Все случайные значения используют \`seededRandom(42)\` — детерминированный ГПСЧ. Один и тот же сид = одни и те же данные каждый раз.
+
+### Пайплайн генерации
+
+#### Шаг 1: \`generateGlobalCurve()\`
+Генерирует 548 дней (2024-08-11 — 2026-02-10) глобальных значений пользователей:
+
+\`\`\`
+base = 30 + 190 * progress^1.25              // логистический рост: ~30 -> ~220 users/day
+* seasonalFactor                                // летний пик, зимний спад (+/-12%)
+* weekendFactor                                 // выходные: +10-18%
+* spikeFactor                                   // 2% шанс всплеска 1.25-1.85x
+* dipFactor                                     // 6-8 случайных провалов (4-12 дней каждый, глубина 60-85%)
+* noise                                         // равномерный шум 0.88-1.16
+\`\`\`
+
+Также генерирует глобальный DAU/MAU: \`0.12 + progress * 0.14 + normal(0, 0.015)\`, ограничен [0.06, 0.42].
+
+#### Шаг 2: \`generateCountryDailyData()\`
+Распределяет глобальных дневных пользователей по 25 странам:
+
+1. Вес страны = \`userWeight / totalWeight * normalNoise(1.0, 0.18)\`
+2. \`distributeInt(globalUsers, weights)\` — целочисленное распределение методом наибольших остатков
+3. Для каждой страны за каждый день:
+   - \`newUsers\` = распределённая доля
+   - \`newUsersIos\` = \`round(newUsers * iosShare * noise)\`
+   - \`newCats\` = \`round(newUsers * catsPerUser * noise)\`
+   - \`newCatsStray\` = \`round(newCats * strayShare * noise)\`
+   - \`shots\` = \`round(newCats * shotsPerCat * noise)\`
+   - \`dauMau\` = модель экспоненциального затухания от кумулятивной базы установок
+
+#### Шаг 3: \`generateDailyFromCountries()\`
+Суммирует дневные данные всех стран обратно в глобальный массив \`dailyData\`.
+
+### Распределение возраст/пол
+- Глобальное: колокольная кривая с пиком на индексе 4 (26-30), шум Box-Muller для разделения male/female
+- По странам: случайный сдвиг пика +/-0-3 позиции, масштабирование через \`userWeight / 100\`
+`,
+    },
   },
 ];
 
-function SectionNav({ activeId, onSelect }) {
+// ─── UI strings ─────────────────────────────────────────────────────────────
+
+const UI = {
+  en: {
+    pageTitle: 'Developer Documentation',
+    pageSubtitle: 'CatHunter Dashboard — internal reference',
+    back: 'Back to Dashboard',
+  },
+  ru: {
+    pageTitle: 'Документация для разработчика',
+    pageSubtitle: 'CatHunter Dashboard — внутренний справочник',
+    back: 'Назад к дашборду',
+  },
+};
+
+// ─── Components ─────────────────────────────────────────────────────────────
+
+function LangSwitch({ lang, onChange }) {
+  return (
+    <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+      <button
+        onClick={() => onChange('en')}
+        className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+          lang === 'en'
+            ? 'bg-blue-600 text-white'
+            : 'bg-white text-gray-600 hover:bg-gray-50'
+        }`}
+      >
+        EN
+      </button>
+      <button
+        onClick={() => onChange('ru')}
+        className={`px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer ${
+          lang === 'ru'
+            ? 'bg-blue-600 text-white'
+            : 'bg-white text-gray-600 hover:bg-gray-50'
+        }`}
+      >
+        RU
+      </button>
+    </div>
+  );
+}
+
+function SectionNav({ activeId, onSelect, lang }) {
   return (
     <nav className="flex flex-wrap gap-1.5 mb-6">
       {sections.map((s) => (
@@ -477,7 +960,7 @@ function SectionNav({ activeId, onSelect }) {
               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
           }`}
         >
-          {s.title}
+          {s.title[lang]}
         </button>
       ))}
     </nav>
@@ -485,7 +968,6 @@ function SectionNav({ activeId, onSelect }) {
 }
 
 function MarkdownContent({ content }) {
-  // Simple markdown-to-JSX renderer for our docs
   const lines = content.trim().split('\n');
   const elements = [];
   let i = 0;
@@ -603,34 +1085,42 @@ function MarkdownContent({ content }) {
   return <div>{elements}</div>;
 }
 
+// ─── Main page ──────────────────────────────────────────────────────────────
+
 export default function DevDocsPage({ onClose }) {
   const [activeSection, setActiveSection] = useState('overview');
+  const [lang, setLang] = useState('en');
+
   const section = sections.find((s) => s.id === activeSection) || sections[0];
+  const ui = UI[lang];
 
   return (
     <div className="min-h-screen bg-slate-100 p-4 lg:p-6">
       <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Developer Documentation</h1>
-            <p className="text-sm text-gray-500 mt-1">CatHunter Dashboard — internal reference</p>
+            <h1 className="text-2xl font-bold text-gray-900">{ui.pageTitle}</h1>
+            <p className="text-sm text-gray-500 mt-1">{ui.pageSubtitle}</p>
           </div>
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
-          >
-            Back to Dashboard
-          </button>
+          <div className="flex items-center gap-3">
+            <LangSwitch lang={lang} onChange={setLang} />
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium rounded-lg bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors cursor-pointer"
+            >
+              {ui.back}
+            </button>
+          </div>
         </div>
 
         {/* Section Navigation */}
-        <SectionNav activeId={activeSection} onSelect={setActiveSection} />
+        <SectionNav activeId={activeSection} onSelect={setActiveSection} lang={lang} />
 
         {/* Content */}
         <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">{section.title}</h2>
-          <MarkdownContent content={section.content} />
+          <h2 className="text-xl font-bold text-gray-900 mb-4">{section.title[lang]}</h2>
+          <MarkdownContent content={section.content[lang]} />
         </div>
 
         {/* Prev / Next navigation */}
@@ -644,7 +1134,7 @@ export default function DevDocsPage({ onClose }) {
                     onClick={() => setActiveSection(sections[idx - 1].id)}
                     className="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
-                    ← {sections[idx - 1].title}
+                    ← {sections[idx - 1].title[lang]}
                   </button>
                 ) : <div />}
                 {idx < sections.length - 1 ? (
@@ -652,7 +1142,7 @@ export default function DevDocsPage({ onClose }) {
                     onClick={() => setActiveSection(sections[idx + 1].id)}
                     className="px-4 py-2 text-sm font-medium rounded-lg bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-colors cursor-pointer"
                   >
-                    {sections[idx + 1].title} →
+                    {sections[idx + 1].title[lang]} →
                   </button>
                 ) : <div />}
               </>
